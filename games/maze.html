@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zennita's Maze Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .story {
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .story h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .story p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .maze {
+            display: grid;
+            grid-template-columns: repeat(15, 30px);
+            grid-template-rows: repeat(15, 30px);
+            gap: 1px;
+            margin: 20px auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .wall {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .path {
+            background: linear-gradient(45deg, #ecf0f1, #bdc3c7);
+        }
+
+        .player {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            font-weight: bold;
+            border: 2px solid #fff;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);
+        }
+
+        .sound-source {
+            background: linear-gradient(45deg, #f1c40f, #f39c12);
+            color: #2c3e50;
+            font-weight: bold;
+            border: 2px solid #fff;
+            animation: glow 1.5s infinite alternate;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
+            100% { box-shadow: 0 0 30px rgba(241, 196, 15, 1), 0 0 40px rgba(241, 196, 15, 0.6); }
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 40px);
+            gap: 5px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #2980b9, #3498db);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .keyboard-hint {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .victory-message {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            border-radius: 10px;
+            animation: celebration 1s ease-in-out;
+        }
+
+        @keyframes celebration {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .victory-message h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #e67e22, #d35400);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .sound-indicator {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #ffd700;
+        }
+
+        .sound-wave {
+            display: inline-block;
+            animation: soundWave 1s infinite;
+        }
+
+        @keyframes soundWave {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="story">
+            <h1>🏠 Zennita's Maze Adventure</h1>
+            <p>Zennita enters a mysterious building and hears a strange sound echoing from somewhere inside.</p>
+            <p><strong>Help Zennita navigate through the maze to find the source of the sound!</strong></p>
+        </div>
+
+        <div id="maze" class="maze"></div>
+
+        <div class="sound-indicator">
+            <span class="sound-wave">♪</span> Listen carefully... the sound is calling... <span class="sound-wave">♫</span>
+        </div>
+
+        <div class="controls">
+            <h3>Move Zennita:</h3>
+            <div class="control-buttons">
+                <div></div>
+                <button class="control-btn" onclick="movePlayer('up')">↑</button>
+                <div></div>
+                <button class="control-btn" onclick="movePlayer('left')">←</button>
+                <div></div>
+                <button class="control-btn" onclick="movePlayer('right')">→</button>
+                <div></div>
+                <button class="control-btn" onclick="movePlayer('down')">↓</button>
+                <div></div>
+            </div>
+            <div class="keyboard-hint">
+                Or use arrow keys on your keyboard
+            </div>
+        </div>
+
+        <div id="victoryMessage" class="victory-message">
+            <h2>🎉 Congratulations!</h2>
+            <p>Zennita found the source of the mysterious sound!</p>
+            <p>The adventure is complete!</p>
+            <button class="reset-btn" onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Maze layout: 0 = wall, 1 = path, 2 = player start, 3 = sound source
+        const mazeLayout = [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,2,1,0,1,1,1,0,1,1,1,0,1,1,0],
+            [0,1,1,0,1,0,1,0,1,0,1,0,1,0,0],
+            [0,1,0,0,1,0,1,1,1,0,1,1,1,0,0],
+            [0,1,1,1,1,0,0,0,0,0,1,0,1,1,0],
+            [0,0,0,1,0,0,1,1,1,0,1,0,0,1,0],
+            [0,1,1,1,1,1,1,0,1,1,1,1,1,1,0],
+            [0,1,0,0,0,0,0,0,1,0,0,0,0,1,0],
+            [0,1,1,1,1,1,1,1,1,0,1,1,1,1,0],
+            [0,0,0,1,0,0,0,0,1,0,1,0,0,0,0],
+            [0,1,1,1,0,1,1,1,1,1,1,0,1,1,0],
+            [0,1,0,0,0,1,0,0,0,0,1,0,1,0,0],
+            [0,1,1,1,1,1,0,1,1,1,1,1,1,1,0],
+            [0,0,0,0,0,0,0,1,0,0,0,0,0,3,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ];
+
+        let playerPos = { x: 1, y: 1 };
+        let gameWon = false;
+
+        function createMaze() {
+            const maze = document.getElementById('maze');
+            maze.innerHTML = '';
+
+            for (let y = 0; y < mazeLayout.length; y++) {
+                for (let x = 0; x < mazeLayout[y].length; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = `cell-${x}-${y}`;
+
+                    if (mazeLayout[y][x] === 0) {
+                        cell.classList.add('wall');
+                    } else if (mazeLayout[y][x] === 1) {
+                        cell.classList.add('path');
+                    } else if (mazeLayout[y][x] === 2) {
+                        cell.classList.add('path', 'player');
+                        cell.textContent = 'Z';
+                        playerPos = { x: x, y: y };
+                    } else if (mazeLayout[y][x] === 3) {
+                        cell.classList.add('path', 'sound-source');
+                        cell.textContent = '♪';
+                    }
+
+                    maze.appendChild(cell);
+                }
+            }
+        }
+
+        function movePlayer(direction) {
+            if (gameWon) return;
+
+            let newX = playerPos.x;
+            let newY = playerPos.y;
+
+            switch (direction) {
+                case 'up':
+                    newY--;
+                    break;
+                case 'down':
+                    newY++;
+                    break;
+                case 'left':
+                    newX--;
+                    break;
+                case 'right':
+                    newX++;
+                    break;
+            }
+
+            // Check bounds and walls
+            if (newX >= 0 && newX < mazeLayout[0].length && 
+                newY >= 0 && newY < mazeLayout.length && 
+                mazeLayout[newY][newX] !== 0) {
+
+                // Clear current position
+                const currentCell = document.getElementById(`cell-${playerPos.x}-${playerPos.y}`);
+                currentCell.classList.remove('player');
+                currentCell.textContent = '';
+
+                // Update position
+                playerPos.x = newX;
+                playerPos.y = newY;
+
+                // Set new position
+                const newCell = document.getElementById(`cell-${newX}-${newY}`);
+                
+                // Check if reached sound source
+                if (mazeLayout[newY][newX] === 3) {
+                    newCell.classList.add('player');
+                    newCell.textContent = 'Z♪';
+                    gameWon = true;
+                    showVictory();
+                } else {
+                    newCell.classList.add('player');
+                    newCell.textContent = 'Z';
+                }
+            }
+        }
+
+        function showVictory() {
+            document.getElementById('victoryMessage').style.display = 'block';
+        }
+
+        function resetGame() {
+            gameWon = false;
+            document.getElementById('victoryMessage').style.display = 'none';
+            
+            // Reset maze layout
+            mazeLayout[1][1] = 2; // Reset player start
+            mazeLayout[13][13] = 3; // Reset sound source
+            
+            createMaze();
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case 'ArrowUp':
+                    event.preventDefault();
+                    movePlayer('up');
+                    break;
+                case 'ArrowDown':
+                    event.preventDefault();
+                    movePlayer('down');
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    movePlayer('left');
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    movePlayer('right');
+                    break;
+            }
+        });
+
+        // Initialize the game
+        createMaze();
+    </script>
+</body>
+</html>

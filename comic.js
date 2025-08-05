@@ -3,7 +3,7 @@
 // Game progress tracking
 const gameProgress = {
     hacking: false,
-    killMonster: false
+    maze: false
 };
 
 // Current page tracking
@@ -79,8 +79,8 @@ function nextPage() {
             showGameProgressModal("You need to complete the hacking game first!");
             return;
         }
-        if (currentPage === 3 && !gameProgress.killMonster) {
-            showGameProgressModal("You need to complete the monster game first!");
+        if (currentPage === 3 && !gameProgress.maze) {
+            showGameProgressModal("You need to complete the maze game first!");
             return;
         }
         
@@ -105,7 +105,7 @@ function updateNavigationButtons() {
     // Check if current page has a game and if it's completed
     const hasGame = gameButton !== null;
     const isGameCompleted = (currentPage === 1 && gameProgress.hacking) || 
-                           (currentPage === 3 && gameProgress.killMonster);
+                           (currentPage === 3 && gameProgress.maze);
     
     navButtons.forEach(button => {
         if (button.textContent.includes('Next Page')) {
@@ -153,11 +153,11 @@ function loadGameContent(gameFile, gameType) {
             <iframe src="${gameFile}" class="game-frame" 
                     onload="setupHackingGame()"></iframe>
         `;
-    } else if (gameType === 'killMonster') {
-        // Load kill monster game as iframe
+    } else if (gameType === 'maze') {
+        // Load maze game as iframe
         gameContent.innerHTML = `
             <iframe src="${gameFile}" class="game-frame" 
-                    onload="setupKillMonsterGame()"></iframe>
+                    onload="setupMazeGame()"></iframe>
         `;
     }
 }
@@ -175,14 +175,14 @@ function setupHackingGame() {
     }
 }
 
-function setupKillMonsterGame() {
-    // Setup communication with kill monster game iframe
+function setupMazeGame() {
+    // Setup communication with maze game iframe
     const iframe = document.querySelector('.game-frame');
     if (iframe && iframe.contentWindow) {
         // Listen for game completion message from iframe
         window.addEventListener('message', function(event) {
-            if (event.data.type === 'gameComplete' && event.data.game === 'killMonster') {
-                completeGame('killMonster');
+            if (event.data.type === 'gameComplete' && event.data.game === 'maze') {
+                completeGame('maze');
             }
         });
     }
@@ -266,11 +266,11 @@ window.debugState = function() {
     
     const hasGame = hasGameOnPage(currentPage);
     const isGameCompleted = (currentPage === 1 && gameProgress.hacking) || 
-                           (currentPage === 3 && gameProgress.killMonster);
+                           (currentPage === 3 && gameProgress.maze);
     
     console.log('Is Game Completed:', isGameCompleted);
     console.log('Next Page Button Should Show:', !hasGame || isGameCompleted);
     console.log('Can Proceed to Next Page:', currentPage < totalPages && 
         !(currentPage === 1 && !gameProgress.hacking) && 
-        !(currentPage === 3 && !gameProgress.killMonster));
+        !(currentPage === 3 && !gameProgress.maze));
 }; 

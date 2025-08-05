@@ -5,7 +5,7 @@ A modular interactive comic system with embedded games and progress tracking.
 ## Features
 
 - **7 Comic Pages**: Navigate through the story with next/previous buttons
-- **2 Embedded Games**: Hacking challenge and Monster battle
+- **2 Embedded Games**: Hacking challenge and Maze challenge
 - **Progress Tracking**: Must complete games to advance through the story
 - **Easy Customization**: Simple configuration file for adjustments
 - **Responsive Design**: Works on desktop and mobile devices
@@ -20,7 +20,7 @@ comic/
 ├── config.js           # Configuration file for easy adjustments
 ├── games/
 │   ├── hacking.html    # Hacking challenge game
-│   └── kill-monster.html # Monster battle game
+│   └── maze.html       # Maze challenge game
 └── images/
     └── pages/          # Comic page images (page-1.png to page-7.png)
 ```
@@ -36,8 +36,8 @@ comic/
 1. **Page 1**: View comic and click "Start Hacking Game" button
 2. **Complete Hacking Game**: Must finish to proceed to Page 2
 3. **Page 2**: View comic (no game required)
-4. **Page 3**: View comic and click "Start Monster Game" button
-5. **Complete Monster Game**: Must finish to proceed to Page 4
+4. **Page 3**: View comic and click "Start Maze Game" button
+5. **Complete Maze Game**: Must finish to proceed to Page 4
 6. **Pages 4-7**: Continue reading the story
 
 ## Easy Customization
@@ -53,7 +53,7 @@ const COMIC_CONFIG = {
             top: 200,    // pixels from top
             left: 60     // percentage from left
         },
-        killMonster: {
+        maze: {
             top: 300,    // pixels from top
             left: 40     // percentage from left
         }

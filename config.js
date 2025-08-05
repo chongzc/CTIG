@@ -8,7 +8,7 @@ const COMIC_CONFIG = {
             top: 200,    // pixels from top
             left: 60     // percentage from left
         },
-        killMonster: {
+        maze: {
             top: 300,    // pixels from top
             left: 40     // percentage from left
         }
@@ -22,9 +22,9 @@ const COMIC_CONFIG = {
             requiredPage: 1,
             autoAdvanceDelay: 2000
         },
-        killMonster: {
-            title: "Monster Battle", 
-            file: "games/kill-monster.html",
+        maze: {
+            title: "Maze Challenge", 
+            file: "games/maze.html",
             requiredPage: 3,
             autoAdvanceDelay: 2000
         }
