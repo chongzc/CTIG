@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kill the Monster - Super Fast</title>
+  <style>
+    body {
+      margin: 0;
+      background: #1e1e1e;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      color: white;
+    }
+
+    #game-container {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      background: #2a2a2a;
+      border: 3px solid white;
+      overflow: hidden;
+    }
+
+    #monster {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background: url('./images/enemy.png') center/contain no-repeat;
+      cursor: pointer;
+      transition: top 0.1s ease, left 0.1s ease;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+    }
+
+    #hp-bar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 200px;
+      height: 20px;
+      background: #444;
+      border: 1px solid white;
+    }
+
+    #hp-fill {
+      height: 100%;
+      background: limegreen;
+      width: 100%;
+      transition: width 0.1s;
+    }
+
+    #message {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      text-align: center;
+      font-size: 2em;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="hp-bar">
+      <div id="hp-fill"></div>
+    </div>
+    <div id="monster" title="Click fast!" draggable="false"></div>
+    <div id="message">🎉 Monster Defeated!</div>
+  </div>
+
+  <script>
+    const monster = document.getElementById("monster");
+    const hpFill = document.getElementById("hp-fill");
+    const message = document.getElementById("message");
+    const game = document.getElementById("game-container");
+
+    let maxHP = 5;
+    let currentHP = maxHP;
+
+    function updateHP() {
+      const percent = (currentHP / maxHP) * 100;
+      hpFill.style.width = percent + "%";
+      hpFill.style.background = percent < 25 ? "red" : percent < 50 ? "orange" : "limegreen";
+    }
+
+    function moveMonster() {
+      const maxX = game.clientWidth - monster.clientWidth;
+      const maxY = game.clientHeight - monster.clientHeight;
+      const randomX = Math.random() * maxX;
+      const randomY = Math.random() * maxY;
+
+      monster.style.left = `${randomX}px`;
+      monster.style.top = `${randomY}px`;
+    }
+
+    // Super fast movement
+    const moveInterval = setInterval(() => {
+      if (currentHP > 0) moveMonster();
+    }, 700);
+
+    // Click to damage
+    monster.addEventListener("click", () => {
+      currentHP--;
+      updateHP();
+
+      if (currentHP <= 0) {
+        monster.style.display = "none";
+        message.style.display = "block";
+        clearInterval(moveInterval);
+        
+        // Notify parent comic that game is completed
+        setTimeout(() => {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+              type: 'gameComplete',
+              game: 'killMonster'
+            }, '*');
+          }
+        }, 1500);
+      }
+    });
+
+    // Init
+    moveMonster();
+    updateHP();
+  </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Comic</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Comic Pages -->
+  <section id="comic-page-1" class="comic-page active">
+    <div class="comic-container">
+      <img src="images/pages/page-1.png" class="comic" alt="Comic Page 1" />
+      <button class="overlay-button" data-game="hacking" data-page="1" style="top: 200px; left: 60%;">
+        Start Hacking Game
+      </button>
+    </div>
+    <div class="navigation">
+      <!-- Next Page button will be hidden automatically when game is present -->
+      <button class="nav-button" onclick="nextPage()">Next Page</button>
+    </div>
+  </section>
+
+  <section id="comic-page-2" class="comic-page">
+    <div class="comic-container">
+      <img src="images/pages/page-2.png" class="comic" alt="Comic Page 2" />
+    </div>
+    <div class="navigation">
+      <button class="nav-button" onclick="previousPage()">Previous Page</button>
+      <button class="nav-button" onclick="nextPage()">Next Page</button>
+    </div>
+  </section>
+
+  <section id="comic-page-3" class="comic-page">
+    <div class="comic-container">
+      <img src="images/pages/page-3.png" class="comic" alt="Comic Page 3" />
+      <button class="overlay-button" data-game="kill-monster" data-page="3" style="top: 300px; left: 40%;">
+        Start Monster Game
+      </button>
+    </div>
+    <div class="navigation">
+      <button class="nav-button" onclick="previousPage()">Previous Page</button>
+      <!-- Next Page button will be hidden automatically when game is present -->
+      <button class="nav-button" onclick="nextPage()">Next Page</button>
+    </div>
+  </section>
+
+  <section id="comic-page-4" class="comic-page">
+    <div class="comic-container">
+      <img src="images/pages/page-4.png" class="comic" alt="Comic Page 4" />
+    </div>
+    <div class="navigation">
+      <button class="nav-button" onclick="previousPage()">Previous Page</button>
+      <button class="nav-button" onclick="nextPage()">Next Page</button>
+    </div>
+  </section>
+
+  <section id="comic-page-5" class="comic-page">
+    <div class="comic-container">
+      <img src="images/pages/page-5.png" class="comic" alt="Comic Page 5" />
+    </div>
+    <div class="navigation">
+      <button class="nav-button" onclick="previousPage()">Previous Page</button>
+      <button class="nav-button" onclick="nextPage()">Next Page</button>
+    </div>
+  </section>
+
+  <section id="comic-page-6" class="comic-page">
+    <div class="comic-container">
+      <img src="images/pages/page-6.png" class="comic" alt="Comic Page 6" />
+    </div>
+    <div class="navigation">
+      <button class="nav-button" onclick="previousPage()">Previous Page</button>
+      <button class="nav-button" onclick="nextPage()">Next Page</button>
+    </div>
+  </section>
+
+  <section id="comic-page-7" class="comic-page">
+    <div class="comic-container">
+      <img src="images/pages/page-7.png" class="comic" alt="Comic Page 7" />
+    </div>
+    <div class="navigation">
+      <button class="nav-button" onclick="previousPage()">Previous Page</button>
+    </div>
+  </section>
+
+  <!-- Game Container -->
+  <section id="game-container" class="game-section">
+    <div class="game-header">
+      <h2 id="game-title">Game</h2>
+      <button class="close-game" onclick="closeGame()">×</button>
+    </div>
+    <div id="game-content">
+      <!-- Game content will be loaded here -->
+    </div>
+  </section>
+
+  <!-- Game Progress Modal -->
+  <div id="game-progress-modal" class="modal">
+    <div class="modal-content">
+      <h3 id="modal-title">Game Progress</h3>
+      <p id="modal-message">You need to complete the game to continue!</p>
+      <button onclick="closeModal()">OK</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="comic.js"></script>
+</body>
+</html>
