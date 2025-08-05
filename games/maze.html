@@ -250,7 +250,7 @@
             <h2>🎉 Congratulations!</h2>
             <p>Zennita found the source of the mysterious sound!</p>
             <p>The adventure is complete!</p>
-            <button class="reset-btn" onclick="resetGame()">Play Again</button>
+            <button class="reset-btn" onclick="goToNextPage()">Next Page</button>
         </div>
     </div>
 
@@ -369,6 +369,19 @@
             mazeLayout[13][13] = 3; // Reset sound source
             
             createMaze();
+        }
+
+        function goToNextPage() {
+            // Send message to parent comic to advance to next page
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'gameComplete',
+                    game: 'maze'
+                }, '*');
+            } else {
+                // Fallback: navigate to the next page in the comic
+                window.location.href = '../index.html#page-4';
+            }
         }
 
         // Keyboard controls

@@ -191,9 +191,8 @@ function setupMazeGame() {
 function completeGame(gameType) {
     gameProgress[gameType] = true;
     
-    // Close game and show success message
+    // Close game
     closeGame();
-    showGameProgressModal(`Congratulations! You completed the ${gameConfig[gameType].title}!`);
     
     // Update navigation buttons to show "Next Page" button now that game is completed
     updateNavigationButtons();
