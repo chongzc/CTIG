@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clue Hunt Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradient-shift 8s ease infinite;
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            color: #00ff00;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hud {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 40, 0.9));
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .enemies-left {
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 16px;
+            text-shadow: 0 0 10px #ff6b6b;
+        }
+
+        .hud div:last-child {
+            color: #88ff88;
+            font-size: 14px;
+            text-shadow: 0 0 5px #88ff88;
+        }
+
+        .hints-container {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 100;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 40, 0.9));
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            backdrop-filter: blur(10px);
+            max-width: 350px;
+        }
+
+        .hints-container > div:first-child {
+            color: #ffdd44;
+            text-shadow: 0 0 10px #ffdd44;
+            font-size: 16px;
+        }
+
+        .hint {
+            background: linear-gradient(90deg, rgba(0, 255, 0, 0.15), rgba(0, 255, 0, 0.05));
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-left: 4px solid #00ff00;
+            border-radius: 6px;
+            font-size: 13px;
+            box-shadow: 0 2px 8px rgba(0, 255, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .hint:hover {
+            background: linear-gradient(90deg, rgba(0, 255, 0, 0.25), rgba(0, 255, 0, 0.1));
+            transform: translateX(5px);
+        }
+
+        .battle-area {
+            flex: 1;
+            position: relative;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 100, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 100, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at center, #2a2a4e, #1a1a2e);
+            border: 3px solid #00ff00;
+            border-radius: 15px;
+            margin: 15px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 0, 0.4),
+                inset 0 0 50px rgba(0, 255, 0, 0.1);
+        }
+
+        .enemy {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff4444, #ff6666, #ff8888);
+            border: 3px solid #ff0000;
+            border-radius: 50%;
+            cursor: crosshair;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            box-shadow: 
+                0 0 20px rgba(255, 68, 68, 0.6),
+                inset 0 0 20px rgba(255, 255, 255, 0.2);
+            animation: enemy-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes enemy-pulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 20px rgba(255, 68, 68, 0.6),
+                    inset 0 0 20px rgba(255, 255, 255, 0.2);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 30px rgba(255, 68, 68, 0.8),
+                    inset 0 0 20px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        .enemy:hover {
+            transform: scale(1.15);
+            box-shadow: 
+                0 0 40px rgba(255, 68, 68, 0.9),
+                inset 0 0 25px rgba(255, 255, 255, 0.4);
+            border-color: #ffff00;
+        }
+
+        .enemy.hit {
+            animation: hit-flash 0.4s ease;
+        }
+
+        @keyframes hit-flash {
+            0% { 
+                background: linear-gradient(135deg, #ff4444, #ff6666, #ff8888);
+                transform: scale(1);
+            }
+            25% { 
+                background: linear-gradient(135deg, #ffff00, #ffff44, #ffff88);
+                transform: scale(1.2);
+            }
+            50% { 
+                background: linear-gradient(135deg, #ff8800, #ffaa00, #ffcc44);
+                transform: scale(1.1);
+            }
+            100% { 
+                background: linear-gradient(135deg, #ff4444, #ff6666, #ff8888);
+                transform: scale(1);
+            }
+        }
+
+        .enemy.dead {
+            background: linear-gradient(135deg, #666, #888, #555);
+            border-color: #444;
+            pointer-events: none;
+            opacity: 0.4;
+            animation: none;
+            box-shadow: 0 0 10px rgba(100, 100, 100, 0.3);
+        }
+
+        .rooms-section {
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(0, 20, 40, 0.9), rgba(0, 40, 80, 0.9));
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 200;
+            padding: 80px 0 0 0;
+            margin: 0;
+        }
+
+        .rooms-title {
+            font-size: 48px;
+            margin-bottom: 25px;
+            color: #00ff00;
+            text-shadow: 
+                0 0 20px #00ff00, 
+                0 0 40px #00ff00,
+                0 0 60px #00ff00;
+            font-weight: 900;
+            font-family: 'Arial Black', 'Helvetica Bold', sans-serif;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-align: center;
+            width: 100%;
+        }
+
+        .rooms-instruction {
+            font-size: 24px;
+            color: #88ff88;
+            text-shadow: 
+                0 0 15px #88ff88,
+                0 0 30px #88ff88;
+            margin-bottom: 50px;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+            letter-spacing: 1px;
+        }
+
+        .rooms-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+        }
+
+        .room {
+            width: 150px;
+            height: 150px;
+            border: 4px solid #00ff00;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.9);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 12px 25px rgba(0, 0, 0, 0.4),
+                inset 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .room::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent 50%, rgba(255, 255, 255, 0.05));
+            pointer-events: none;
+            transform: rotate(45deg);
+        }
+
+        .room::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        .room:hover {
+            transform: scale(1.12) translateY(-8px) rotateY(5deg);
+            box-shadow: 
+                0 20px 50px rgba(0, 255, 0, 0.7),
+                0 0 40px rgba(0, 255, 0, 0.5),
+                inset 0 0 40px rgba(255, 255, 255, 0.2);
+            border-color: #44ff44;
+            filter: brightness(1.1);
+        }
+
+        .room:active {
+            transform: scale(1.05) translateY(-3px);
+            transition: all 0.1s ease;
+        }
+
+        .room-label {
+            font-size: 16px;
+            margin-top: 12px;
+            color: #eee;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .room.yellow { 
+            background: linear-gradient(135deg, #ffd700, #ffed4e, #fff76b);
+            border-color: #ffed4e;
+        }
+        .room.green { 
+            background: linear-gradient(135deg, #00ff00, #32cd32, #90ee90);
+            border-color: #32cd32;
+        }
+        .room.blue { 
+            background: linear-gradient(135deg, #0066ff, #4169e1, #87ceeb);
+            border-color: #4169e1;
+        }
+        .clues-bottom {
+            position: relative;
+            bottom: auto;
+            left: auto;
+            transform: none;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 40, 0.95));
+            padding: 25px 35px;
+            border-radius: 15px;
+            border: 3px solid #00ff00;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 0, 0.6),
+                inset 0 0 30px rgba(0, 255, 0, 0.1);
+            backdrop-filter: blur(15px);
+            max-width: 90%;
+            width: auto;
+            min-width: 600px;
+            margin: 60px auto 0 auto;
+        }
+
+        .clues-bottom-title {
+            color: #ffdd44;
+            text-shadow: 0 0 15px #ffdd44;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .clues-list {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .clue-item {
+            background: linear-gradient(90deg, rgba(0, 255, 0, 0.25), rgba(0, 255, 0, 0.1));
+            padding: 12px 20px;
+            border-left: 5px solid #00ff00;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+            color: #ffffff;
+            text-align: center;
+            min-width: 220px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .room.red { 
+            background: linear-gradient(135deg, #ff0000, #ff4444, #ff6b6b);
+            border-color: #ff4444;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: alarm-flash 0.5s infinite;
+        }
+
+        @keyframes alarm-flash {
+            0% { background: rgba(255, 0, 0, 0.9); }
+            50% { background: rgba(255, 0, 0, 0.7); }
+            100% { background: rgba(255, 0, 0, 0.9); }
+        }
+
+        .game-over-content {
+            text-align: center;
+            color: white;
+        }
+
+        .enemy-image {
+            width: 200px;
+            height: 200px;
+            background: url('../images/game-images/kill-monster-images/enemy.png') center/contain no-repeat;
+            margin: 20px auto;
+        }
+
+        .restart-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            background: #ff6666;
+        }
+
+        .victory {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 255, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+        }
+
+        .click-effect {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffff00;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: click-expand 0.3s ease-out forwards;
+        }
+
+        @keyframes click-expand {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .rooms-container {
+                gap: 20px;
+                padding: 0 10px;
+            }
+            
+            .room {
+                width: 110px;
+                height: 110px;
+                font-size: 40px;
+            }
+            
+            .room-label {
+                font-size: 12px;
+                margin-top: 6px;
+            }
+            
+            .rooms-title {
+                font-size: 36px;
+                margin-bottom: 15px;
+                letter-spacing: 2px;
+            }
+
+            .rooms-instruction {
+                font-size: 18px;
+                margin-bottom: 30px;
+                padding: 0 20px;
+            }
+            
+            .hints-container {
+                position: static;
+                margin: 10px;
+                max-width: none;
+            }
+
+            .clues-bottom {
+                bottom: auto;
+                padding: 20px 25px;
+                min-width: 300px;
+                max-width: 95%;
+                margin: 40px auto 0 auto;
+            }
+
+            .clues-list {
+                gap: 15px;
+            }
+
+            .clue-item {
+                min-width: 180px;
+                font-size: 14px;
+                padding: 10px 16px;
+            }
+
+            .clues-bottom-title {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .rooms-container {
+                gap: 15px;
+                padding: 0 5px;
+            }
+            
+            .room {
+                width: 85px;
+                height: 85px;
+                font-size: 32px;
+            }
+            
+            .room-label {
+                font-size: 10px;
+                margin-top: 4px;
+            }
+
+            .rooms-title {
+                font-size: 28px;
+                letter-spacing: 1px;
+                margin-bottom: 10px;
+            }
+
+            .rooms-instruction {
+                font-size: 16px;
+                margin-bottom: 25px;
+                padding: 0 10px;
+            }
+
+            .clues-bottom {
+                bottom: auto;
+                padding: 15px 20px;
+                min-width: 250px;
+                max-width: 98%;
+                margin: 30px auto 0 auto;
+            }
+
+            .clues-list {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .clue-item {
+                min-width: auto;
+                font-size: 13px;
+                padding: 8px 14px;
+            }
+
+            .clues-bottom-title {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="hud">
+            <div class="enemies-left">Enemies: <span id="enemyCount">6</span></div>
+            <div>Click enemies to shoot them!</div>
+        </div>
+
+        <div class="hints-container" id="hintsContainer">
+            <div style="font-weight: bold; margin-bottom: 10px;">🔍 Clues Collected:</div>
+            <div id="hintsDisplay"></div>
+        </div>
+
+        <div class="battle-area" id="battleArea">
+            <!-- Enemies will be spawned here -->
+        </div>
+
+        <div class="rooms-section" id="roomsSection">
+            <div class="rooms-title">🚪 Choose the Core Room</div>
+            <div class="rooms-instruction">Use the clues to find the correct core room!</div>
+            
+            <div class="rooms-container">
+                <div class="room yellow" onclick="selectRoom('A')" data-room="A">
+                    A
+                    <div class="room-label">Yellow Room</div>
+                </div>
+                <div class="room green" onclick="selectRoom('B')" data-room="B">
+                    B
+                    <div class="room-label">Green Room</div>
+                </div>
+                <div class="room blue" onclick="selectRoom('C')" data-room="C">
+                    C
+                    <div class="room-label">Blue Room</div>
+                </div>
+                <div class="room red" onclick="selectRoom('D')" data-room="D">
+                    D
+                    <div class="room-label">Red Room</div>
+                </div>
+            </div>
+
+            <div class="clues-bottom" id="cluesBottom">
+                <div class="clues-bottom-title">🔍 Collected Clues:</div>
+                <div class="clues-list" id="cluesListBottom"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <div class="game-over-content">
+            <h1>💀 MISSION FAILED 💀</h1>
+            <div class="enemy-image"></div>
+            <p>You chose the wrong room!</p>
+            <button class="restart-btn" onclick="restartGame()">Restart Game</button>
+        </div>
+    </div>
+
+    <div class="victory" id="victory">
+        <h1>🎉 MISSION COMPLETE! 🎉</h1>
+        <p>You found the core room and completed the mission!</p>
+        <button class="restart-btn" onclick="completeGame()" style="background: #00aa00;">Continue Adventure</button>
+    </div>
+
+    <script>
+        let enemies = [];
+        let hintsCollected = [];
+        let enemiesDefeated = 0;
+        let gamePhase = 'battle'; // 'battle' or 'rooms'
+        
+        const hints = [
+            "🔴 Core room is not red",
+            "🅱️ Core room doesn't have 'B' letter", 
+            "⬅️ Core room is not the left one"
+        ];
+        
+        const correctRoom = 'C'; // Blue room is correct (not red, not B, not leftmost)
+        
+        class Enemy {
+            constructor(id) {
+                this.id = id;
+                this.hitPoints = 3;
+                this.maxHitPoints = 3;
+                this.x = Math.random() * (window.innerWidth - 150) + 75;
+                this.y = Math.random() * (window.innerHeight - 250) + 125;
+                this.vx = (Math.random() - 0.5) * 15; // Increased speed from 2 to 6
+                this.vy = (Math.random() - 0.5) * 15; // Increased speed from 2 to 6
+                this.element = null;
+                this.isAlive = true;
+                this.createElement();
+                this.startMovement();
+            }
+            
+            createElement() {
+                this.element = document.createElement('div');
+                this.element.className = 'enemy';
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+                this.element.innerHTML = this.hitPoints;
+                this.element.onclick = (e) => this.takeDamage(e);
+                document.getElementById('battleArea').appendChild(this.element);
+            }
+            
+            startMovement() {
+                this.moveInterval = setInterval(() => {
+                    if (!this.isAlive) return;
+                    
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    const battleArea = document.getElementById('battleArea');
+                    const rect = battleArea.getBoundingClientRect();
+                    
+                    if (this.x <= 15 || this.x >= rect.width - 75) {
+                        this.vx = -this.vx;
+                        this.x = Math.max(15, Math.min(this.x, rect.width - 75));
+                    }
+                    
+                    if (this.y <= 15 || this.y >= rect.height - 75) {
+                        this.vy = -this.vy;
+                        this.y = Math.max(15, Math.min(this.y, rect.height - 75));
+                    }
+                    
+                    this.element.style.left = this.x + 'px';
+                    this.element.style.top = this.y + 'px';
+                }, 30); // Increased refresh rate from 50ms to 30ms for smoother movement
+            }
+            
+            takeDamage(event) {
+                if (!this.isAlive) return;
+                
+                event.stopPropagation();
+                this.createClickEffect(event);
+                
+                // Play attack sound
+                playAttackSound();
+                
+                this.hitPoints--;
+                this.element.innerHTML = this.hitPoints;
+                this.element.classList.add('hit');
+                
+                setTimeout(() => {
+                    if (this.element) {
+                        this.element.classList.remove('hit');
+                    }
+                }, 300);
+                
+                if (this.hitPoints <= 0) {
+                    this.die();
+                }
+            }
+            
+            createClickEffect(event) {
+                const effect = document.createElement('div');
+                effect.className = 'click-effect';
+                effect.style.left = (event.clientX - 10) + 'px';
+                effect.style.top = (event.clientY - 10) + 'px';
+                document.body.appendChild(effect);
+                
+                setTimeout(() => effect.remove(), 300);
+            }
+            
+            die() {
+                this.isAlive = false;
+                clearInterval(this.moveInterval);
+                this.element.classList.add('dead');
+                this.element.onclick = null;
+                
+                // Play enemy death sound
+                playEnemyDeathSound();
+                
+                enemiesDefeated++;
+                updateEnemyCount();
+                
+                // Drop hints at specific enemy deaths
+                if (enemiesDefeated === 2) {
+                    addHint(0); // First hint after 2 enemies
+                } else if (enemiesDefeated === 4) {
+                    addHint(1); // Second hint after 4 enemies
+                } else if (enemiesDefeated === 6) {
+                    addHint(2); // Third hint after all enemies
+                    setTimeout(() => {
+                        showRoomsPhase();
+                    }, 1500);
+                }
+            }
+        }
+        
+        function initializeGame() {
+            enemies = [];
+            hintsCollected = [];
+            enemiesDefeated = 0;
+            gamePhase = 'battle';
+            
+            // Clear battle area
+            const battleArea = document.getElementById('battleArea');
+            battleArea.innerHTML = '';
+            
+            // Create enemies
+            for (let i = 0; i < 6; i++) {
+                enemies.push(new Enemy(i));
+            }
+            
+            // Reset UI
+            updateEnemyCount();
+            updateHintsDisplay();
+            document.getElementById('roomsSection').style.display = 'none';
+            document.getElementById('battleArea').style.display = 'block';
+            document.getElementById('hintsContainer').style.display = 'block'; // Show hints container
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('victory').style.display = 'none';
+        }
+        
+        function updateEnemyCount() {
+            document.getElementById('enemyCount').textContent = 6 - enemiesDefeated;
+        }
+        
+        function addHint(hintIndex) {
+            if (!hintsCollected.includes(hintIndex)) {
+                hintsCollected.push(hintIndex);
+                updateHintsDisplay();
+                
+                // Show hint notification
+                const hint = document.createElement('div');
+                hint.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0, 255, 0, 0.9);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    font-size: 18px;
+                    z-index: 500;
+                    border: 2px solid #00ff00;
+                `;
+                hint.innerHTML = `<strong>🔍 New Clue!</strong><br>${hints[hintIndex]}`;
+                document.body.appendChild(hint);
+                
+                setTimeout(() => hint.remove(), 3000);
+            }
+        }
+        
+        function updateBottomCluesDisplay() {
+            const cluesListBottom = document.getElementById('cluesListBottom');
+            cluesListBottom.innerHTML = '';
+            
+            hintsCollected.forEach(index => {
+                const clueDiv = document.createElement('div');
+                clueDiv.className = 'clue-item';
+                clueDiv.textContent = hints[index];
+                cluesListBottom.appendChild(clueDiv);
+            });
+        }
+        
+        function updateHintsDisplay() {
+            const hintsDisplay = document.getElementById('hintsDisplay');
+            hintsDisplay.innerHTML = '';
+            
+            hintsCollected.forEach(index => {
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'hint';
+                hintDiv.textContent = hints[index];
+                hintsDisplay.appendChild(hintDiv);
+            });
+            
+            if (hintsCollected.length === 0) {
+                hintsDisplay.innerHTML = '<div style="color: #666;">Defeat enemies to collect clues...</div>';
+            }
+        }
+        
+        function showRoomsPhase() {
+            gamePhase = 'rooms';
+            document.getElementById('battleArea').style.display = 'none';
+            document.getElementById('roomsSection').style.display = 'flex';
+            
+            // Hide the top hints container
+            document.getElementById('hintsContainer').style.display = 'none';
+            
+            // Update bottom clues display
+            updateBottomCluesDisplay();
+        }
+        
+        function selectRoom(roomLetter) {
+            if (gamePhase !== 'rooms') return;
+            
+            if (roomLetter === correctRoom) {
+                // Victory!
+                document.getElementById('victory').style.display = 'flex';
+                playVictorySound();
+            } else {
+                // Game Over!
+                document.getElementById('gameOver').style.display = 'flex';
+                playSirenSound();
+            }
+        }
+        
+        function restartGame() {
+            initializeGame();
+        }
+        
+        function completeGame() {
+            // Notify parent comic that game is completed
+            setTimeout(() => {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        game: 'clue'
+                    }, '*');
+                }
+            }, 3000);
+        }
+        
+        function playVictorySound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Victory melody
+                const notes = [261.63, 329.63, 392.00, 523.25]; // C, E, G, C
+                notes.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + index * 0.2);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.2 + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime + index * 0.2);
+                    oscillator.stop(audioContext.currentTime + index * 0.2 + 0.3);
+                });
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        function playAttackSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Sharp attack sound
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        function playEnemyDeathSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Death sound effect - descending tone with noise
+                const oscillator1 = audioContext.createOscillator();
+                const oscillator2 = audioContext.createOscillator();
+                const gainNode1 = audioContext.createGain();
+                const gainNode2 = audioContext.createGain();
+                
+                oscillator1.connect(gainNode1);
+                oscillator2.connect(gainNode2);
+                gainNode1.connect(audioContext.destination);
+                gainNode2.connect(audioContext.destination);
+                
+                // Main death tone
+                oscillator1.frequency.setValueAtTime(600, audioContext.currentTime);
+                oscillator1.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+                gainNode1.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                // Distortion overlay
+                oscillator2.frequency.setValueAtTime(1200, audioContext.currentTime);
+                oscillator2.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.3);
+                gainNode2.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator1.start(audioContext.currentTime);
+                oscillator1.stop(audioContext.currentTime + 0.5);
+                oscillator2.start(audioContext.currentTime);
+                oscillator2.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function playSirenSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Siren effect
+                for (let i = 0; i < 5; i++) {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime + i * 0.4);
+                    oscillator.frequency.linearRampToValueAtTime(800, audioContext.currentTime + i * 0.4 + 0.2);
+                    oscillator.frequency.linearRampToValueAtTime(400, audioContext.currentTime + i * 0.4 + 0.4);
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.4);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.4 + 0.4);
+                    
+                    oscillator.start(audioContext.currentTime + i * 0.4);
+                    oscillator.stop(audioContext.currentTime + i * 0.4 + 0.4);
+                }
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGame();
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            enemies.forEach(enemy => {
+                if (enemy.isAlive) {
+                    const battleArea = document.getElementById('battleArea');
+                    const rect = battleArea.getBoundingClientRect();
+                    enemy.x = Math.min(enemy.x, rect.width - 75);
+                    enemy.y = Math.min(enemy.y, rect.height - 75);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
