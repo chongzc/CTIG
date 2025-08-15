@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPS Monster Shooting Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0f23, #1a1a3a);
+            color: white;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a3a 0%, #0f0f23 100%);
+        }
+
+        #gameArea {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monster {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ff4444, #aa0000);
+            border-radius: 50% 20% 50% 20%;
+            cursor: crosshair;
+            transition: all 0.1s ease;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+            animation: float 0.5s ease-in-out infinite alternate;
+        }
+
+        .monster::before {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #ffff00;
+            border-radius: 50%;
+            top: 20px;
+            left: 20px;
+            box-shadow: 25px 0 0 #ffff00;
+        }
+
+        .monster::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 8px;
+            background: #000;
+            border-radius: 50px;
+            top: 50px;
+            left: 25px;
+        }
+
+        @keyframes float {
+            from { transform: translateY(0px) rotate(0deg); }
+            to { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .monster:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.8);
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #score, #monstersLeft, #timer {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #score {
+            color: #00ff00;
+        }
+
+        #monstersLeft {
+            color: #ffaa00;
+        }
+
+        #timer {
+            color: #ff6666;
+        }
+
+        #gameOverScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        #gameOverContent {
+            text-align: center;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameOverContent h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .win {
+            color: #00ff00;
+        }
+
+        .lose {
+            color: #ff4444;
+        }
+
+        #finalScore {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        #restartBtn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #restartBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        #crosshair {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 150;
+            transform: translate(-50%, -50%);
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        #crosshair::before {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+
+        #crosshair::after {
+            width: 2px;
+            height: 20px;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #gun {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 200px;
+            z-index: 100;
+            transition: all 0.1s ease;
+        }
+
+        .gun-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 120px;
+            background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+            border-radius: 5px 5px 15px 15px;
+            border: 2px solid #444;
+        }
+
+        .gun-barrel {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 80px;
+            background: linear-gradient(135deg, #3a3a3a, #222);
+            border-radius: 6px 6px 2px 2px;
+            border: 1px solid #555;
+        }
+
+        .gun-handle {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-15deg);
+            width: 25px;
+            height: 60px;
+            background: linear-gradient(135deg, #2a2a2a, #181818);
+            border-radius: 0 0 12px 12px;
+            border: 2px solid #444;
+        }
+
+        .gun-trigger {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 12px;
+            background: #666;
+            border-radius: 2px;
+            border: 1px solid #888;
+        }
+
+        .muzzle-flash {
+            position: absolute;
+            bottom: 175px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ffff00 0%, #ff6600 30%, #ff0000 60%, transparent 100%);
+            border-radius: 50%;
+            opacity: 0;
+            animation: muzzleFlash 0.1s ease-out;
+        }
+
+        @keyframes muzzleFlash {
+            0% { 
+                opacity: 1; 
+                transform: translateX(-50%) scale(0.5);
+            }
+            50% { 
+                opacity: 0.8; 
+                transform: translateX(-50%) scale(1.2);
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateX(-50%) scale(1.5);
+            }
+        }
+
+        @keyframes gunRecoil {
+            0% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+            100% { transform: translateX(-50%) translateY(0px); }
+        }
+
+        .gun-recoil {
+            animation: gunRecoil 0.15s ease-out;
+        }
+
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0f23, #1a1a3a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+
+        #startContent {
+            text-align: center;
+            background: rgba(42, 42, 74, 0.8);
+            padding: 50px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #startBtn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        #startBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .instructions {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="startScreen">
+            <div id="startContent">
+                <h1>🎯 FPS Monster Hunt</h1>
+                <div class="instructions">
+                    <p>• 30 monsters will spawn one by one</p>
+                    <p>• Each monster appears for 2 seconds</p>
+                    <p>• Click to shoot monsters</p>
+                    <p>• Score 25+ hits to win!</p>
+                </div>
+                <button id="startBtn">START GAME</button>
+            </div>
+        </div>
+
+        <div id="crosshair"></div>
+        
+        <div id="gun">
+            <div class="gun-barrel"></div>
+            <div class="gun-body"></div>
+            <div class="gun-handle"></div>
+            <div class="gun-trigger"></div>
+        </div>
+        
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="monstersLeft">Monsters Left: 30</div>
+            <div id="timer">Time: 2.0s</div>
+        </div>
+
+        <div id="gameArea"></div>
+
+        <div id="gameOverScreen">
+            <div id="gameOverContent">
+                <h1 id="resultTitle">Game Over</h1>
+                <div id="finalScore">Final Score: 0/30</div>
+                <button id="restartBtn">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MonsterShooterGame {
+            constructor() {
+                this.score = 0;
+                this.monstersLeft = 30;
+                this.totalMonsters = 30;
+                this.currentMonster = null;
+                this.monsterTimer = null;
+                this.countdownTimer = null;
+                this.gameActive = false;
+                this.timeLeft = 2.0;
+                
+                this.gameArea = document.getElementById('gameArea');
+                this.scoreElement = document.getElementById('score');
+                this.monstersLeftElement = document.getElementById('monstersLeft');
+                this.timerElement = document.getElementById('timer');
+                this.gameOverScreen = document.getElementById('gameOverScreen');
+                this.crosshair = document.getElementById('crosshair');
+                this.gun = document.getElementById('gun');
+                
+                this.setupEventListeners();
+                this.setupCrosshair();
+                this.createAudioContext();
+            }
+
+            createAudioContext() {
+                // Create audio context for sound effects
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            playSound(frequency, duration, type = 'sine') {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + duration);
+            }
+
+            playGunshot() {
+                // Create a more realistic gunshot sound using noise and multiple frequencies
+                const noiseBuffer = this.audioContext.createBuffer(1, 4410, this.audioContext.sampleRate);
+                const noiseData = noiseBuffer.getChannelData(0);
+                
+                // Generate white noise
+                for (let i = 0; i < 4410; i++) {
+                    noiseData[i] = (Math.random() * 2 - 1) * 0.5;
+                }
+                
+                const noiseSource = this.audioContext.createBufferSource();
+                noiseSource.buffer = noiseBuffer;
+                
+                const noiseFilter = this.audioContext.createBiquadFilter();
+                noiseFilter.type = 'bandpass';
+                noiseFilter.frequency.value = 1000;
+                
+                const noiseGain = this.audioContext.createGain();
+                noiseGain.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+                
+                noiseSource.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(this.audioContext.destination);
+                
+                noiseSource.start(this.audioContext.currentTime);
+                noiseSource.stop(this.audioContext.currentTime + 0.1);
+                
+                // Add a low frequency thump
+                const bassOsc = this.audioContext.createOscillator();
+                const bassGain = this.audioContext.createGain();
+                
+                bassOsc.connect(bassGain);
+                bassGain.connect(this.audioContext.destination);
+                
+                bassOsc.frequency.value = 60;
+                bassOsc.type = 'sine';
+                
+                bassGain.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+                bassGain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.05);
+                
+                bassOsc.start(this.audioContext.currentTime);
+                bassOsc.stop(this.audioContext.currentTime + 0.05);
+            }
+
+            animateGunShot() {
+                // Add muzzle flash
+                const muzzleFlash = document.createElement('div');
+                muzzleFlash.className = 'muzzle-flash';
+                this.gun.appendChild(muzzleFlash);
+                
+                // Add recoil animation
+                this.gun.classList.add('gun-recoil');
+                
+                // Remove effects after animation
+                setTimeout(() => {
+                    if (muzzleFlash.parentNode) {
+                        muzzleFlash.remove();
+                    }
+                    this.gun.classList.remove('gun-recoil');
+                }, 150);
+            }
+
+            setupCrosshair() {
+                document.addEventListener('mousemove', (e) => {
+                    this.crosshair.style.left = e.clientX + 'px';
+                    this.crosshair.style.top = e.clientY + 'px';
+                });
+            }
+
+            setupEventListeners() {
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    document.getElementById('startScreen').style.display = 'none';
+                    this.startGame();
+                });
+
+                document.getElementById('restartBtn').addEventListener('click', () => {
+                    this.resetGame();
+                });
+
+                this.gameArea.addEventListener('click', (e) => {
+                    if (this.gameActive) {
+                        // Always play gunshot sound and animation when clicking in game area
+                        this.playGunshot();
+                        this.animateGunShot();
+                        
+                        if (e.target.classList.contains('monster')) {
+                            this.hitMonster();
+                        }
+                    }
+                });
+            }
+
+            startGame() {
+                this.gameActive = true;
+                this.spawnNextMonster();
+            }
+
+            spawnNextMonster() {
+                if (this.monstersLeft <= 0) {
+                    this.endGame();
+                    return;
+                }
+
+                // Clear any existing monster
+                if (this.currentMonster) {
+                    this.currentMonster.remove();
+                }
+
+                // Create new monster
+                this.currentMonster = document.createElement('div');
+                this.currentMonster.className = 'monster';
+                
+                // Calculate safe spawn areas (avoiding UI and gun)
+                const monsterSize = 80;
+                const margin = 20;
+                
+                // UI area: top-left corner (roughly 300x150 pixels with margin)
+                const uiWidth = 300;
+                const uiHeight = 150;
+                
+                // Gun area: bottom center (roughly 150x250 pixels with margin)
+                const gunWidth = 150;
+                const gunHeight = 250;
+                
+                let x, y;
+                let attempts = 0;
+                const maxAttempts = 50;
+                
+                do {
+                    x = Math.random() * (window.innerWidth - monsterSize);
+                    y = Math.random() * (window.innerHeight - monsterSize);
+                    attempts++;
+                    
+                    // Check if position conflicts with UI area (top-left)
+                    const conflictsWithUI = (
+                        x < (uiWidth + margin) && 
+                        y < (uiHeight + margin)
+                    );
+                    
+                    // Check if position conflicts with gun area (bottom-center)
+                    const gunLeft = (window.innerWidth - gunWidth) / 2;
+                    const gunTop = window.innerHeight - gunHeight - margin;
+                    const conflictsWithGun = (
+                        x + monsterSize > gunLeft && 
+                        x < gunLeft + gunWidth &&
+                        y + monsterSize > gunTop
+                    );
+                    
+                    // Position is valid if it doesn't conflict with either area
+                    if (!conflictsWithUI && !conflictsWithGun) {
+                        break;
+                    }
+                    
+                } while (attempts < maxAttempts);
+                
+                // Fallback: if we can't find a good position, use center-right area
+                if (attempts >= maxAttempts) {
+                    x = window.innerWidth * 0.6 + Math.random() * (window.innerWidth * 0.3 - monsterSize);
+                    y = window.innerHeight * 0.3 + Math.random() * (window.innerHeight * 0.4 - monsterSize);
+                }
+                
+                this.currentMonster.style.left = x + 'px';
+                this.currentMonster.style.top = y + 'px';
+                
+                this.gameArea.appendChild(this.currentMonster);
+
+                // Reset timer
+                this.timeLeft = 2.0;
+                this.startCountdown();
+
+                // Auto-remove monster after 2 seconds
+                this.monsterTimer = setTimeout(() => {
+                    this.missMonster();
+                }, 2000);
+            }
+
+            startCountdown() {
+                this.countdownTimer = setInterval(() => {
+                    this.timeLeft -= 0.1;
+                    this.timerElement.textContent = `Time: ${this.timeLeft.toFixed(1)}s`;
+                    
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.countdownTimer);
+                    }
+                }, 100);
+            }
+
+            hitMonster() {
+                if (!this.gameActive) return;
+                
+                this.score++;
+                this.playSound(800, 0.1); // Hit sound
+                
+                // Clear timers
+                clearTimeout(this.monsterTimer);
+                clearInterval(this.countdownTimer);
+                
+                // Remove monster
+                if (this.currentMonster) {
+                    this.currentMonster.remove();
+                    this.currentMonster = null;
+                }
+                
+                this.monstersLeft--;
+                this.updateUI();
+                
+                // Spawn next monster after short delay
+                setTimeout(() => {
+                    this.spawnNextMonster();
+                }, 200);
+            }
+
+            missMonster() {
+                if (!this.gameActive) return;
+                
+                this.playSound(200, 0.3); // Miss sound
+                
+                // Clear timers
+                clearInterval(this.countdownTimer);
+                
+                // Remove monster
+                if (this.currentMonster) {
+                    this.currentMonster.remove();
+                    this.currentMonster = null;
+                }
+                
+                this.monstersLeft--;
+                this.updateUI();
+                
+                // Spawn next monster after short delay
+                setTimeout(() => {
+                    this.spawnNextMonster();
+                }, 200);
+            }
+
+            updateUI() {
+                this.scoreElement.textContent = `Score: ${this.score}`;
+                this.monstersLeftElement.textContent = `Monsters Left: ${this.monstersLeft}`;
+            }
+
+            endGame() {
+                this.gameActive = false;
+                clearTimeout(this.monsterTimer);
+                clearInterval(this.countdownTimer);
+                
+                // Play end game sound
+                if (this.score >= 25) {
+                    this.playSound(600, 0.5); // Victory sound
+                } else {
+                    this.playSound(150, 1.0); // Defeat sound
+                }
+                
+                this.showGameOver();
+            }
+
+            showGameOver() {
+                const resultTitle = document.getElementById('resultTitle');
+                const finalScore = document.getElementById('finalScore');
+                const gameOverContent = document.getElementById('gameOverContent');
+                
+                if (this.score >= 25) {
+                    resultTitle.textContent = '🎉 VICTORY! 🎉';
+                    resultTitle.className = 'win';
+                } else {
+                    resultTitle.textContent = '💀 GAME OVER 💀';
+                    resultTitle.className = 'lose';
+                }
+                
+                finalScore.textContent = `Final Score: ${this.score}/${this.totalMonsters}`;
+                this.gameOverScreen.style.display = 'flex';
+            }
+
+            resetGame() {
+                this.score = 0;
+                this.monstersLeft = 30;
+                this.timeLeft = 2.0;
+                this.gameActive = false;
+                
+                // Clear any existing monster
+                if (this.currentMonster) {
+                    this.currentMonster.remove();
+                    this.currentMonster = null;
+                }
+                
+                // Clear timers
+                clearTimeout(this.monsterTimer);
+                clearInterval(this.countdownTimer);
+                
+                // Hide game over screen
+                this.gameOverScreen.style.display = 'none';
+                
+                // Update UI
+                this.updateUI();
+                this.timerElement.textContent = 'Time: 2.0s';
+                
+                // Start new game
+                this.startGame();
+            }
+        }
+
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            new MonsterShooterGame();
+        });
+    </script>
+</body>
+</html>
