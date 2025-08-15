@@ -3,7 +3,8 @@
 // Game progress tracking
 const gameProgress = {
     hacking: false,
-    maze: false
+    maze: false,
+    electric: false
 };
 
 // Current page tracking
@@ -170,6 +171,19 @@ function setupHackingGame() {
         window.addEventListener('message', function(event) {
             if (event.data.type === 'gameComplete' && event.data.game === 'hacking') {
                 completeGame('hacking');
+            }
+        });
+    }
+}
+
+function setupElectricGame() {
+    // Setup communication with electric game iframe
+    const iframe = document.querySelector('.game-frame');
+    if (iframe && iframe.contentWindow) {
+        // Listen for game completion message from iframe
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'gameComplete' && event.data.game === 'electric') {
+                completeGame('electric');
             }
         });
     }

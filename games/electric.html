@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ ELECTRIC MAZE: NAVIGATE THE CURRENT</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a2e 0%, #1a1a4e 50%, #2a2a6e 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            overflow: auto;
+            position: relative;
+            transition: all 0.5s ease;
+            cursor: default;
+        }
+        
+        body.electrocuted {
+            background: linear-gradient(135deg, #4a0000 0%, #8a0000 50%, #ca0000 100%);
+            animation: electricShock 0.1s infinite;
+        }
+        
+        @keyframes electricShock {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5) contrast(1.2); }
+        }
+        
+        /* Electric background effect */
+        .electric-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+            background: 
+                radial-gradient(circle at 20% 80%, #00ffff 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, #ff00ff 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, #ffff00 0%, transparent 50%);
+            animation: electricPulse 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes electricPulse {
+            0% { opacity: 0.1; }
+            100% { opacity: 0.3; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 10px;
+            animation: electricGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes electricGlow {
+            from { text-shadow: 0 0 10px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
+        }
+        
+        body.electrocuted .game-header {
+            animation: redGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes redGlow {
+            from { text-shadow: 0 0 10px #ff0000; }
+            to { text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000; }
+        }
+        
+        .title {
+            font-size: 2em;
+            font-weight: 900;
+            color: #00ffff;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+        
+        body.electrocuted .title {
+            color: #ff0000;
+        }
+        
+        .subtitle {
+            font-size: 1em;
+            color: #ffff00;
+            margin-bottom: 10px;
+        }
+        
+        body.electrocuted .subtitle {
+            color: #ff4444;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        body.electrocuted .game-info {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #ff0000;
+        }
+        
+        .chances-display {
+            font-size: 1.3em;
+            color: #ffaa00;
+        }
+        
+        .chances-display.critical {
+            color: #ff6b35;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .level-display {
+            font-size: 1.3em;
+            color: #00ff00;
+        }
+        
+        .level-display.complete {
+            color: #ffff00;
+            animation: levelComplete 1s infinite;
+        }
+        
+        @keyframes levelComplete {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .maze-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        body.electrocuted .maze-container {
+            border-color: #ff0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+            background: #000;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .cursor {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: #000;
+            pointer-events: auto;
+            z-index: 10;
+            box-shadow: 0 0 15px #00ffff;
+            transition: all 0.1s ease;
+            cursor: grab;
+        }
+        
+        .cursor:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        
+        .cursor.electrocuted {
+            background: linear-gradient(45deg, #ff0000, #ff4444);
+            box-shadow: 0 0 15px #ff0000;
+            animation: cursorShock 0.1s infinite;
+            cursor: grabbing;
+        }
+        
+        @keyframes cursorShock {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(0.9) rotate(-5deg); }
+        }
+        
+        .status-message {
+            text-align: center;
+            font-size: 1em;
+            margin: 10px 0;
+            min-height: 25px;
+        }
+        
+        .success { 
+            color: #00ff00; 
+            animation: successPulse 1s ease-in-out;
+        }
+        
+        .error { 
+            color: #ff0000; 
+            animation: errorShake 0.5s ease-in-out;
+        }
+        
+        .warning { 
+            color: #ffaa00; 
+        }
+        
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .countdown {
+            font-size: 3em;
+            color: #ff0000;
+            text-align: center;
+            animation: countdownPulse 1s infinite;
+        }
+        
+        @keyframes countdownPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 10px 0;
+            color: #888;
+            font-size: 0.8em;
+        }
+        
+        .start-btn, .restart-btn, .next-level-btn {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .start-btn:hover, .restart-btn:hover, .next-level-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .start-btn:disabled, .restart-btn:disabled, .next-level-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .game-complete {
+            text-align: center;
+            color: #00ff00;
+            font-size: 2em;
+            margin: 30px 0;
+            animation: gameCompleteGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes gameCompleteGlow {
+            from { text-shadow: 0 0 10px #00ff00; }
+            to { text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
+        }
+        
+        .game-over {
+            text-align: center;
+            color: #ff0000;
+            font-size: 2em;
+            margin: 30px 0;
+            animation: gameOverFlash 1s infinite;
+        }
+        
+        @keyframes gameOverFlash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .instructions {
+            text-align: center;
+            color: #aaa;
+            margin: 10px 0;
+            max-width: 600px;
+            line-height: 1.6;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .title { font-size: 2em; }
+            .game-info { flex-direction: column; gap: 10px; }
+            .cursor { width: 20px; height: 20px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="electric-bg"></div>
+    
+    <div class="container">
+        <div class="game-header">
+            <div class="title">⚡ ELECTRIC MAZE: NAVIGATE THE CURRENT</div>
+            <div class="subtitle">Guide the electric cursor through the charged pathways</div>
+        </div>
+        
+        <div class="game-info">
+            <div class="chances-display" id="chancesDisplay">
+                Chances Remaining: <span id="chancesCount">3</span>
+            </div>
+            <div class="level-display" id="levelDisplay">
+                Level: <span id="currentLevel">1</span> / 3
+            </div>
+        </div>
+        
+        <div class="instructions" id="instructions">
+            Click and drag the circle from the green starting point to navigate through the maze!
+        </div>
+        
+        <div class="maze-container">
+            <canvas id="gameCanvas" width="700" height="500"></canvas>
+            <div class="cursor" id="cursor">Z</div>
+        </div>
+        
+        <div class="status-message" id="statusMessage">Click and drag from the green starting point to begin!</div>
+        
+        <div class="controls">
+            Click and drag the circle to navigate • Avoid the electric walls
+        </div>
+        
+        <div>
+            <button class="restart-btn" id="restartBtn" onclick="restartGame()" style="display: none;">🔄 Restart Game</button>
+            <button class="next-level-btn" id="nextLevelBtn" onclick="nextLevel()" style="display: none;">➡️ Next Level</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const cursor = document.getElementById('cursor');
+        
+        let gameState = 'menu'; // 'menu', 'playing', 'electrocuted', 'levelComplete', 'gameComplete', 'gameOver'
+        let currentLevel = 1;
+        let chances = 3;
+        let mouseX = 0;
+        let mouseY = 0;
+        let gameStarted = false;
+        let levelCompleted = false;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        
+        // Maze configurations for each level - Neater wall arrangements
+        const mazeConfigs = [
+            // Level 1 - Easy: Simple corridor with obstacles
+            { 
+                startX: 50,
+                startY: 250,
+                endX: 650,
+                endY: 250,
+                walls: [
+                    // Outer walls
+                    {x: 0, y: 0, width: 700, height: 20},
+                    {x: 0, y: 480, width: 700, height: 20},
+                    {x: 0, y: 0, width: 20, height: 500},
+                    {x: 680, y: 0, width: 20, height: 500},
+                    
+                    // Top corridor walls
+                    {x: 20, y: 150, width: 150, height: 20},
+                    {x: 220, y: 200, width: 150, height: 20},
+                    {x: 420, y: 150, width: 150, height: 20},
+                    {x: 620, y: 200, width: 60, height: 20},
+                    
+                    // Bottom corridor walls
+                    {x: 20, y: 330, width: 150, height: 20},
+                    {x: 280, y: 220, width: 20, height: 150},
+                    {x: 420, y: 330, width: 150, height: 20},
+                    {x: 620, y: 280, width: 60, height: 20}
+                ]
+            },
+            // Level 2 - Medium: S-shaped path
+            {
+                startX: 50,
+                startY: 50,
+                endX: 650,
+                endY: 450,
+                walls: [
+                    // Outer walls
+                    {x: 0, y: 0, width: 700, height: 20},
+                    {x: 0, y: 480, width: 700, height: 20},
+                    {x: 0, y: 0, width: 20, height: 500},
+                    {x: 680, y: 0, width: 20, height: 500},
+                    
+                    // S-curve top section
+                    {x: 20, y: 120, width: 300, height: 20},
+                    {x: 300, y: 140, width: 20, height: 100},
+                    {x: 320, y: 220, width: 200, height: 20},
+                    
+                    // S-curve middle section
+                    {x: 180, y: 230, width: 20, height: 100},
+                    {x: 200, y: 320, width: 300, height: 20},
+                    
+                    // S-curve bottom section
+                    {x: 480, y: 320, width: 20, height: 100},
+                    {x: 500, y: 400, width: 180, height: 20}
+                ]
+            },
+            // Level 3 - Hard: Narrow zigzag maze
+            {
+                startX: 50,
+                startY: 50,
+                endX: 650,
+                endY: 50,
+                walls: [
+                    // Outer walls
+                    {x: 0, y: 0, width: 700, height: 20},
+                    {x: 0, y: 480, width: 700, height: 20},
+                    {x: 0, y: 0, width: 20, height: 500},
+                    {x: 680, y: 0, width: 20, height: 500},
+                    
+                    // Zigzag pattern - creates narrow path
+                    {x: 100, y: 20, width: 20, height: 250},
+                    {x: 120, y: 250, width: 80, height: 20},
+                    {x: 180, y: 270, width: 20, height: 140},
+                    {x: 110, y: 390, width: 90, height: 20},
+                    
+                    {x: 260, y: 160, width: 20, height: 400},
+                    {x: 180, y: 160, width: 80, height: 20},
+                    {x: 340, y: 80, width: 20, height: 350},
+                    {x: 260, y: 80, width: 90, height: 20},
+                    {x: 340, y: 260, width: 90, height: 20},
+                    {x: 340, y: 410, width: 280, height: 20},
+                    
+                    {x: 420, y: 20, width: 20, height: 180},
+                    {x: 440, y: 180, width: 80, height: 20},
+                    {x: 500, y: 200, width: 20, height: 160},
+                    {x: 440, y: 340, width: 80, height: 20},
+                    
+                    // Final narrow passage
+                    {x: 600, y: 160, width: 20, height: 260}
+                ]
+            }
+        ];
+        
+        function updateChancesDisplay() {
+            document.getElementById('chancesCount').textContent = chances;
+            const displayElement = document.getElementById('chancesDisplay');
+            
+            if (chances <= 1) {
+                displayElement.classList.add('critical');
+            } else {
+                displayElement.classList.remove('critical');
+            }
+        }
+        
+        function updateLevelDisplay() {
+            document.getElementById('currentLevel').textContent = currentLevel;
+        }
+        
+        function drawMaze() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const config = mazeConfigs[currentLevel - 1];
+            
+            // Draw walls with electric effect
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 10;
+            
+            config.walls.forEach(wall => {
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+            });
+            
+            // Draw start point with pulsing effect
+            ctx.fillStyle = '#00ff00';
+            ctx.shadowColor = '#00ff00';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(config.startX, config.startY, 20, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Add "CLICK TO START" text on start point
+            if (gameState === 'menu') {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 5;
+                ctx.fillText('CLICK &', config.startX, config.startY - 5);
+                ctx.fillText('DRAG', config.startX, config.startY + 8);
+            }
+            
+            // Draw end point
+            ctx.fillStyle = '#ffff00';
+            ctx.shadowColor = '#ffff00';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(config.endX, config.endY, 20, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            ctx.textAlign = 'left';
+        }
+        
+        function drawElectrocutedMaze() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const config = mazeConfigs[currentLevel - 1];
+            
+            // Draw walls with red electric effect
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 15;
+            
+            config.walls.forEach(wall => {
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+            });
+            
+            // Draw start point
+            ctx.fillStyle = '#ff4444';
+            ctx.shadowColor = '#ff4444';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(config.startX, config.startY, 15, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw end point
+            ctx.fillStyle = '#ff8888';
+            ctx.shadowColor = '#ff8888';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(config.endX, config.endY, 20, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
+        }
+        
+        function checkCollision(x, y) {
+            const config = mazeConfigs[currentLevel - 1];
+            const cursorRadius = 12; // Slightly smaller than visual cursor for better gameplay
+            
+            for (let wall of config.walls) {
+                if (x + cursorRadius > wall.x && 
+                    x - cursorRadius < wall.x + wall.width &&
+                    y + cursorRadius > wall.y && 
+                    y - cursorRadius < wall.y + wall.height) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        function checkWin(x, y) {
+            const config = mazeConfigs[currentLevel - 1];
+            const distance = Math.sqrt((x - config.endX) ** 2 + (y - config.endY) ** 2);
+            return distance < 30; // Within reach of end point
+        }
+        
+        function electrocuted() {
+            if (gameState !== 'playing') return;
+            
+            gameState = 'electrocuted';
+            isDragging = false; // Stop dragging when electrocuted
+            document.body.classList.add('electrocuted');
+            cursor.classList.add('electrocuted');
+            
+            drawElectrocutedMaze();
+            
+            playElectricSound();
+            
+            chances--;
+            updateChancesDisplay();
+            
+            if (chances <= 0) {
+                document.getElementById('statusMessage').innerHTML = '<div class="game-over">⚡ GAME OVER! All chances depleted!</div>';
+                setTimeout(() => {
+                    gameState = 'gameOver';
+                    showGameOverScreen();
+                }, 3000);
+            } else {
+                document.getElementById('statusMessage').innerHTML = `<div class="error">⚡ ELECTROCUTED! Resetting in 3 seconds... Chances left: ${chances}</div>`;
+                
+                let countdown = 3;
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        document.getElementById('statusMessage').innerHTML = `<div class="countdown">${countdown}</div>`;
+                    } else {
+                        clearInterval(countdownInterval);
+                        resetToStartPoint();
+                    }
+                }, 1000);
+            }
+        }
+        
+        function levelComplete() {
+            gameState = 'levelComplete';
+            document.getElementById('levelDisplay').classList.add('complete');
+            
+            playSuccessSound();
+            
+            if (currentLevel >= 3) {
+                document.getElementById('statusMessage').innerHTML = '<div class="game-complete">🎉 ALL LEVELS COMPLETED! Electric mastery achieved!</div>';
+                gameState = 'gameComplete';
+                setTimeout(() => {
+                    showGameCompleteScreen();
+                }, 2000);
+            } else {
+                document.getElementById('statusMessage').innerHTML = '<div class="success">⚡ Level Complete! Ready for the next challenge?</div>';
+                document.getElementById('nextLevelBtn').style.display = 'inline-block';
+                document.getElementById('restartBtn').style.display = 'none';
+            }
+        }
+        
+        function checkStartPointClick(x, y) {
+            const config = mazeConfigs[currentLevel - 1];
+            const distance = Math.sqrt((x - config.startX) ** 2 + (y - config.startY) ** 2);
+            return distance < 25; // Within click range of start point
+        }
+        
+        function startGameFromStartPoint() {
+            gameState = 'playing';
+            gameStarted = true;
+            
+            const config = mazeConfigs[currentLevel - 1];
+            mouseX = config.startX;
+            mouseY = config.startY;
+            
+            // Position cursor at start and make it visible
+            cursor.style.left = (config.startX - 12.5) + 'px';
+            cursor.style.top = (config.startY - 12.5) + 'px';
+            cursor.style.display = 'flex';
+            
+            drawMaze();
+            
+            // Don't show restart button during normal gameplay
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('instructions').innerHTML = 'Drag the blue circle to navigate to the yellow endpoint!';
+            document.getElementById('statusMessage').innerHTML = '<div class="warning">Drag carefully! Avoid the electric walls!</div>';
+        }
+        
+        function resetToStartPoint() {
+            gameState = 'menu';
+            document.body.classList.remove('electrocuted');
+            cursor.classList.remove('electrocuted');
+            
+            const config = mazeConfigs[currentLevel - 1];
+            mouseX = config.startX;
+            mouseY = config.startY;
+            
+            // Hide cursor and position at start
+            cursor.style.left = (config.startX - 12.5) + 'px';
+            cursor.style.top = (config.startY - 12.5) + 'px';
+            cursor.style.display = 'none';
+            
+            drawMaze();
+            
+            document.getElementById('statusMessage').innerHTML = '<div class="warning">Click and drag from the green starting point to continue!</div>';
+            document.getElementById('instructions').innerHTML = 'Click and drag the circle from the green starting point to try again!';
+        }
+        
+        function restartGame() {
+            // Reset everything to initial state
+            currentLevel = 1;
+            chances = 3;
+            gameState = 'menu';
+            gameStarted = false;
+            isDragging = false;
+            
+            // Update displays
+            updateLevelDisplay();
+            updateChancesDisplay();
+            
+            // Reset visual state
+            document.body.classList.remove('electrocuted');
+            cursor.classList.remove('electrocuted');
+            
+            // Hide all buttons
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('nextLevelBtn').style.display = 'none';
+            
+            // Reset to first level
+            const config = mazeConfigs[currentLevel - 1];
+            cursor.style.left = (config.startX - 12.5) + 'px';
+            cursor.style.top = (config.startY - 12.5) + 'px';
+            cursor.style.display = 'none';
+            
+            drawMaze();
+            
+            document.getElementById('statusMessage').innerHTML = '<div class="warning">Click and drag from the green starting point to begin!</div>';
+            document.getElementById('instructions').innerHTML = 'Click and drag the circle from the green starting point to navigate through the maze!';
+        }
+        
+        function nextLevel() {
+            currentLevel++;
+            updateLevelDisplay();
+            
+            document.getElementById('levelDisplay').classList.remove('complete');
+            document.getElementById('nextLevelBtn').style.display = 'none';
+            
+            const config = mazeConfigs[currentLevel - 1];
+            mouseX = config.startX;
+            mouseY = config.startY;
+            
+            // Reset to menu state for new level
+            gameState = 'menu';
+            cursor.style.left = (config.startX - 12.5) + 'px';
+            cursor.style.top = (config.startY - 12.5) + 'px';
+            cursor.style.display = 'none';
+            
+            drawMaze();
+            
+            document.getElementById('statusMessage').innerHTML = `<div class="warning">Level ${currentLevel} - Click and drag from the green starting point!</div>`;
+            document.getElementById('instructions').innerHTML = 'Click and drag the circle from the green starting point to complete the level!';
+        }
+        
+        function showGameOverScreen() {
+            document.getElementById('statusMessage').innerHTML = '<div class="game-over">⚡ MISSION FAILED! The electric current was too strong!</div>';
+            document.getElementById('restartBtn').style.display = 'inline-block';
+            document.getElementById('restartBtn').textContent = '🔄 Restart Game';
+            document.getElementById('instructions').innerHTML = 'Click Restart Game to try again from the beginning!';
+            
+            // Hide cursor
+            cursor.style.display = 'none';
+        }
+        
+        function showGameCompleteScreen() {
+            document.getElementById('statusMessage').innerHTML = '<div class="game-complete">🎉 ELECTRIC MASTERY ACHIEVED! All mazes conquered!</div>';
+            
+            // Notify parent comic that game is completed
+            setTimeout(() => {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'gameComplete',
+                        game: 'electric',
+                        completed: true
+                    }, '*');
+                }
+            }, 3000);
+        }
+        
+        // Mouse movement handler for the entire maze container
+        document.addEventListener('DOMContentLoaded', () => {
+            updateChancesDisplay();
+            updateLevelDisplay();
+            drawMaze();
+            
+            // Position cursor at start but keep it hidden until game starts
+            const config = mazeConfigs[currentLevel - 1];
+            cursor.style.left = (config.startX - 12.5) + 'px';
+            cursor.style.top = (config.startY - 12.5) + 'px';
+            cursor.style.display = 'none';
+            
+            // Add drag handlers for the cursor
+            cursor.addEventListener('mousedown', (e) => {
+                if (gameState === 'playing') {
+                    isDragging = true;
+                    const rect = cursor.getBoundingClientRect();
+                    dragStartX = e.clientX - rect.left;
+                    dragStartY = e.clientY - rect.top;
+                    e.preventDefault();
+                }
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && gameState === 'playing') {
+                    const mazeContainer = document.querySelector('.maze-container');
+                    const containerRect = mazeContainer.getBoundingClientRect();
+                    
+                    // Calculate new position
+                    const newX = e.clientX - containerRect.left - dragStartX;
+                    const newY = e.clientY - containerRect.top - dragStartY;
+                    
+                    // Constrain within maze boundaries
+                    const constrainedX = Math.max(0, Math.min(newX, 700 - 25));
+                    const constrainedY = Math.max(0, Math.min(newY, 500 - 25));
+                    
+                    cursor.style.left = constrainedX + 'px';
+                    cursor.style.top = constrainedY + 'px';
+                    
+                    // Update game coordinates (center of cursor)
+                    mouseX = constrainedX + 12.5;
+                    mouseY = constrainedY + 12.5;
+                    
+                    // Check for collision
+                    if (checkCollision(mouseX, mouseY)) {
+                        electrocuted();
+                        return;
+                    }
+                    
+                    // Check for win
+                    if (checkWin(mouseX, mouseY)) {
+                        levelComplete();
+                    }
+                }
+            });
+            
+            // Add touch support for mobile devices
+            cursor.addEventListener('touchstart', (e) => {
+                if (gameState === 'playing') {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    const rect = cursor.getBoundingClientRect();
+                    dragStartX = touch.clientX - rect.left;
+                    dragStartY = touch.clientY - rect.top;
+                    e.preventDefault();
+                }
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging && gameState === 'playing') {
+                    const touch = e.touches[0];
+                    const mazeContainer = document.querySelector('.maze-container');
+                    const containerRect = mazeContainer.getBoundingClientRect();
+                    
+                    // Calculate new position
+                    const newX = touch.clientX - containerRect.left - dragStartX;
+                    const newY = touch.clientY - containerRect.top - dragStartY;
+                    
+                    // Constrain within maze boundaries
+                    const constrainedX = Math.max(0, Math.min(newX, 700 - 25));
+                    const constrainedY = Math.max(0, Math.min(newY, 500 - 25));
+                    
+                    cursor.style.left = constrainedX + 'px';
+                    cursor.style.top = constrainedY + 'px';
+                    
+                    // Update game coordinates (center of cursor)
+                    mouseX = constrainedX + 12.5;
+                    mouseY = constrainedY + 12.5;
+                    
+                    // Check for collision
+                    if (checkCollision(mouseX, mouseY)) {
+                        electrocuted();
+                        return;
+                    }
+                    
+                    // Check for win
+                    if (checkWin(mouseX, mouseY)) {
+                        levelComplete();
+                    }
+                    
+                    e.preventDefault();
+                }
+            });
+            
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+            
+            // Add click handler for starting game
+            canvas.addEventListener('click', (e) => {
+                if (gameState === 'menu') {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
+                    
+                    if (checkStartPointClick(clickX, clickY)) {
+                        startGameFromStartPoint();
+                    }
+                }
+            });
+        });
+        
+        // Prevent right-click context menu
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+        
+        // Sound effects using Web Audio API
+        function playElectricSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function playSuccessSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.4);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (gameStarted) {
+                drawMaze();
+            }
+        });
+    </script>
+</body>
+</html>

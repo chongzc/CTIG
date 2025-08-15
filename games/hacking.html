@@ -20,6 +20,12 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            transition: background 0.5s ease;
+        }
+        
+        body.intruder-detected {
+            background: linear-gradient(135deg, #330000 0%, #660000 50%, #990000 100%);
+            color: #ff0000;
         }
         
         /* Matrix-like background effect */
@@ -53,6 +59,12 @@
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        body.intruder-detected .terminal {
+            border-color: #ff0000;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
         }
         
         .terminal::before {
@@ -64,6 +76,10 @@
             height: 2px;
             background: linear-gradient(90deg, transparent, #00ff41, transparent);
             animation: scan 2s infinite;
+        }
+        
+        body.intruder-detected .terminal::before {
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
         }
         
         @keyframes scan {
@@ -82,6 +98,15 @@
             to { text-shadow: 0 0 20px #00ff41, 0 0 30px #00ff41; }
         }
         
+        body.intruder-detected .header {
+            animation: glowRed 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glowRed {
+            from { text-shadow: 0 0 5px #ff0000; }
+            to { text-shadow: 0 0 20px #ff0000, 0 0 30px #ff0000; }
+        }
+        
         .title {
             font-size: 2.5em;
             font-weight: 900;
@@ -90,10 +115,35 @@
             letter-spacing: 2px;
         }
         
+        body.intruder-detected .title {
+            color: #ff0000;
+        }
+        
         .subtitle {
             font-size: 1.2em;
             color: #64ffda;
             margin-bottom: 20px;
+        }
+        
+        body.intruder-detected .subtitle {
+            color: #ff4444;
+        }
+        
+        .chances-display {
+            text-align: center;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #ffaa00;
+        }
+        
+        .chances-display.critical {
+            color: #ff6b35;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         .phase {
@@ -118,6 +168,10 @@
             text-transform: uppercase;
         }
         
+        body.intruder-detected .phase-title {
+            color: #ff0000;
+        }
+        
         .terminal-output {
             background: rgba(0, 20, 0, 0.8);
             border: 1px solid #00aa00;
@@ -128,9 +182,18 @@
             line-height: 1.6;
         }
         
+        body.intruder-detected .terminal-output {
+            background: rgba(20, 0, 0, 0.8);
+            border-color: #aa0000;
+        }
+        
         .command-line {
             color: #00ff41;
             margin: 10px 0;
+        }
+        
+        body.intruder-detected .command-line {
+            color: #ff0000;
         }
         
         .options {
@@ -163,6 +226,11 @@
         
         .option-btn:active {
             transform: translateY(0);
+        }
+        
+        .option-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .memory-game {
@@ -277,6 +345,11 @@
             border-color: #00ff41;
         }
         
+        .command-option:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .typing-effect {
             border-right: 2px solid #00ff41;
             animation: blink 1s infinite;
@@ -306,11 +379,61 @@
             box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
         }
         
+        .next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .game-complete {
             text-align: center;
             color: #00ff41;
             font-size: 1.5em;
             margin: 30px 0;
+        }
+        
+        .intruder-detected {
+            text-align: center;
+            color: #ff0000;
+            font-size: 2.5em;
+            margin: 30px 0;
+            animation: intruderFlash 1s infinite;
+        }
+        
+        @keyframes intruderFlash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .click-to-close {
+            text-align: center;
+            color: #ff4444;
+            font-size: 1.2em;
+            margin: 20px 0;
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .zoom-effect {
+            animation: zoomFail 2s ease-out;
+        }
+        
+        @keyframes zoomFail {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        .countdown-timer {
+            text-align: center;
+            font-size: 2em;
+            color: #ffaa00;
+            margin: 20px 0;
+            animation: countdown 1s infinite;
+        }
+        
+        @keyframes countdown {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
         
         @media (max-width: 768px) {
@@ -331,6 +454,10 @@
                 <div class="subtitle">Assist Lucy in breaking through the digital firewall</div>
             </div>
             
+            <div class="chances-display" id="chancesDisplay">
+                Chances Remaining: <span id="chancesCount">3</span>
+            </div>
+            
             <!-- Phase 1: Code Pattern Decryption -->
             <div class="phase active" id="phase1">
                 <div class="phase-title">⚡ PHASE 1: Code Pattern Decryption</div>
@@ -339,14 +466,14 @@
                     <div class="command-line">SCANNING AUTHENTICATION PROTOCOLS...</div>
                     <div class="command-line">ERROR: MISSING AUTH SEGMENT DETECTED</div>
                     <div class="command-line" style="color: #ff6b35;">AUTH_CODE = 2050-____-Z0</div>
-                    <div class="command-line">HINT: Code relates to SDG values in Zennita's mission</div>
+                    <div class="command-line">HINT: Code relates to Zero Hunger</div>
                 </div>
                 <div class="status-message" id="phase1Status">Select the correct authentication segment:</div>
                 <div class="options">
-                    <button class="option-btn" onclick="checkPhase1('A')">A) 16PZ</button>
-                    <button class="option-btn" onclick="checkPhase1('B')">B) NHPJ</button>
-                    <button class="option-btn" onclick="checkPhase1('C')">C) L7RZ</button>
-                    <button class="option-btn" onclick="checkPhase1('D')">D) 7SDG</button>
+                    <button class="option-btn" onclick="checkPhase1('A')">A) SDG2</button>
+                    <button class="option-btn" onclick="checkPhase1('B')">B) SDG7</button>
+                    <button class="option-btn" onclick="checkPhase1('C')">C) SDG10</button>
+                    <button class="option-btn" onclick="checkPhase1('D')">D) SDG8</button>
                 </div>
             </div>
             
@@ -364,6 +491,7 @@
                 </div>
                 <div class="memory-game">
                     <button class="next-btn" onclick="startMemoryGame()" id="startMemoryBtn">Start Memory Scan</button>
+                    <div class="countdown-timer" id="countdownTimer" style="display: none;"></div>
                     <div class="symbol-display" id="symbolDisplay"></div>
                     <div id="memoryControls" style="display: none;">
                         <div style="margin: 20px 0; color: #ffaa00;">Click the symbols in the correct order:</div>
@@ -383,17 +511,17 @@
                 </div>
                 <div class="status-message" id="phase3Status">Select the correct injection route:</div>
                 <div class="terminal-commands">
-                    <div class="command-option" onclick="checkPhase3('deep_core')">
-                        > inject --route[deep_core_access]
+                    <div class="command-option" onclick="checkPhase3('siren_sound')">
+                        > inject --route[siren_sound]
                     </div>
-                    <div class="command-option" onclick="checkPhase3('loopback')">
-                        > inject --route[loopback_trap]
+                    <div class="command-option" onclick="checkPhase3('force_intrude')">
+                        > inject --route[force_intrude]
                     </div>
-                    <div class="command-option" onclick="checkPhase3('ben')">
-                        > inject --route[ben_override]
+                    <div class="command-option" onclick="checkPhase3('door_disable')">
+                        > inject --route[door_disable]
                     </div>
-                    <div class="command-option" onclick="checkPhase3('ray')">
-                        > inject --route[ray_backdoor]
+                    <div class="command-option" onclick="checkPhase3('guard_inner')">
+                        > inject --route[guard_inner]
                     </div>
                 </div>
             </div>
@@ -406,8 +534,24 @@
                     <div style="margin-top: 20px; color: #64ffda;">
                         The digital fortress falls, and the path to truth is now open...
                     </div>
-                    <button class="next-btn" onclick="restartGame()">Restart Mission</button>
+                    <div class="click-to-close" onclick="closeGame()" style="color: #64ffda; animation: none;">
+                        Click anywhere to continue
+                    </div>
                 </div>
+            </div>
+            
+            <!-- Intruder Detected -->
+            <div class="phase" id="intruderDetected">
+                <div class="intruder-detected">
+                    🚨 INTRUDER DETECTED 🚨
+                </div>
+                <div style="text-align: center; color: #ff0000; font-size: 1.5em; margin: 20px 0;">
+                    SECURITY BREACH ALERT
+                </div>
+                <div style="text-align: center; color: #ff4444; margin: 20px 0;">
+                    All access attempts have been logged and reported to authorities.
+                </div>
+                <button class="next-btn" onclick="restartGame()">Restart Mission</button>
             </div>
         </div>
     </div>
@@ -417,7 +561,10 @@
         let memorySequence = [];
         let playerSequence = [];
         let gameInProgress = false;
-        const symbols = ['⚡️', '🧬', '☣️', '♻️', '🔒', '🔑'];
+        let chances = 3;
+        let memoryTimer = null;
+        let countdownInterval = null;
+        const symbols = ['⚡️', '🧬', '☣️', '♻️', '🔓', '🔒'];
         
         // Matrix background effect
         function createMatrixEffect() {
@@ -455,11 +602,58 @@
             setInterval(draw, 50);
         }
         
+        function updateChancesDisplay() {
+            const chancesElement = document.getElementById('chancesCount');
+            const displayElement = document.getElementById('chancesDisplay');
+            
+            chancesElement.textContent = chances;
+            
+            if (chances <= 1) {
+                displayElement.classList.add('critical');
+            } else {
+                displayElement.classList.remove('critical');
+            }
+        }
+        
+        function deductChance() {
+            chances--;
+            updateChancesDisplay();
+            
+            if (chances <= 0) {
+                triggerIntruderDetected();
+            }
+        }
+        
+        function triggerIntruderDetected() {
+            document.body.classList.add('intruder-detected');
+            document.querySelector('.terminal').classList.add('zoom-effect');
+            document.querySelectorAll('.phase').forEach(phase => {
+                phase.classList.remove('active');
+            });
+            document.getElementById('intruderDetected').classList.add('active');
+            
+            // Play alarm sound
+            playAlarmSound();
+        }
+        
+        function closeGame() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'closeGame',
+                    game: 'hacking'
+                }, '*');
+            }
+        }
+        
         // Phase 1: Code Pattern Decryption
         function checkPhase1(answer) {
             const statusElement = document.getElementById('phase1Status');
+            const buttons = document.querySelectorAll('#phase1 .option-btn');
             
-            if (answer === 'D') {
+            // Disable all buttons
+            buttons.forEach(btn => btn.disabled = true);
+            
+            if (answer === 'A') {
                 statusElement.innerHTML = '<span class="success">✅ CORRECT! Access Level 1 Granted</span>';
                 playSuccessSound();
                 setTimeout(() => {
@@ -468,9 +662,14 @@
             } else {
                 statusElement.innerHTML = '<span class="error glitch">❌ INCORRECT! Security Alert Triggered</span>';
                 playErrorSound();
-                setTimeout(() => {
-                    statusElement.textContent = 'Select the correct authentication segment:';
-                }, 2000);
+                deductChance();
+                
+                if (chances > 0) {
+                    setTimeout(() => {
+                        statusElement.textContent = 'Select the correct authentication segment:';
+                        buttons.forEach(btn => btn.disabled = false);
+                    }, 2000);
+                }
             }
         }
         
@@ -482,9 +681,9 @@
             document.getElementById('startMemoryBtn').style.display = 'none';
             document.getElementById('phase2Status').textContent = 'Watch the sequence carefully...';
             
-            // Generate random sequence
+            // Generate random sequence (shorter for difficulty)
             memorySequence = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 4; i++) {
                 memorySequence.push(symbols[Math.floor(Math.random() * symbols.length)]);
             }
             
@@ -496,14 +695,15 @@
                 if (progress >= 100) {
                     clearInterval(progressInterval);
                 }
-            }, 100);
+            }, 50); // Faster progress
             
-            // Display sequence
-            displaySequence();
+            // Display sequence with countdown
+            displaySequenceWithCountdown();
         }
         
-        function displaySequence() {
+        function displaySequenceWithCountdown() {
             const display = document.getElementById('symbolDisplay');
+            const countdownElement = document.getElementById('countdownTimer');
             display.innerHTML = '';
             
             let index = 0;
@@ -516,12 +716,27 @@
                     
                     setTimeout(() => {
                         symbolDiv.classList.remove('flash');
-                    }, 500);
+                    }, 300); // Faster flash
                     
                     index++;
-                    setTimeout(showNextSymbol, 800);
+                    setTimeout(showNextSymbol, 500); // Faster sequence
                 } else {
-                    setTimeout(setupPlayerInput, 1000);
+                    // Start countdown timer
+                    let countdown = 3;
+                    countdownElement.style.display = 'block';
+                    countdownElement.textContent = countdown;
+                    
+                    countdownInterval = setInterval(() => {
+                        countdown--;
+                        if (countdown > 0) {
+                            countdownElement.textContent = countdown;
+                        } else {
+                            clearInterval(countdownInterval);
+                            countdownElement.style.display = 'none';
+                            display.innerHTML = ''; // Hide the sequence
+                            setupPlayerInput();
+                        }
+                    }, 1000);
                 }
             };
             
@@ -557,11 +772,20 @@
             
             // Check if current selection is correct
             if (symbol !== memorySequence[playerSequence.length - 1]) {
-                statusElement.innerHTML = '<span class="error">❌ Wrong sequence! Try again...</span>';
+                statusElement.innerHTML = '<span class="error">❌ Wrong sequence! Resetting Phase 2...</span>';
                 playErrorSound();
-                setTimeout(() => {
-                    resetMemoryGame();
-                }, 1500);
+                deductChance();
+                
+                if (chances > 0) {
+                    setTimeout(() => {
+                        resetMemoryGame();
+                    }, 1500);
+                } else {
+                    // If no chances left, still trigger intruder detection
+                    setTimeout(() => {
+                        triggerIntruderDetected();
+                    }, 1500);
+                }
                 return;
             }
             
@@ -580,19 +804,27 @@
         
         function resetMemoryGame() {
             playerSequence = [];
-            document.getElementById('phase2Status').textContent = 'Watch the sequence carefully...';
+            document.getElementById('phase2Status').textContent = 'Memorize the sequence, then reproduce it:';
             document.getElementById('memoryControls').style.display = 'none';
             document.getElementById('startMemoryBtn').style.display = 'block';
             document.getElementById('scanProgress').style.width = '0%';
+            document.getElementById('countdownTimer').style.display = 'none';
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
             gameInProgress = false;
         }
         
         // Phase 3: Final Exploit Injection
         function checkPhase3(route) {
             const statusElement = document.getElementById('phase3Status');
+            const options = document.querySelectorAll('#phase3 .command-option');
             
-            if (route === 'ben') {
-                statusElement.innerHTML = '<span class="success">✅ EXPLOIT SUCCESSFUL! Ben\'s override protocol activated</span>';
+            // Disable all options
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+            
+            if (route === 'door_disable') {
+                statusElement.innerHTML = '<span class="success">✅ EXPLOIT SUCCESSFUL! Door systems disabled</span>';
                 playSuccessSound();
                 setTimeout(() => {
                     completeGame();
@@ -600,9 +832,14 @@
             } else {
                 statusElement.innerHTML = '<span class="error glitch">❌ EXPLOIT FAILED! Security countermeasures activated</span>';
                 playErrorSound();
-                setTimeout(() => {
-                    statusElement.textContent = 'Select the correct injection route:';
-                }, 2000);
+                deductChance();
+                
+                if (chances > 0) {
+                    setTimeout(() => {
+                        statusElement.textContent = 'Select the correct injection route:';
+                        options.forEach(opt => opt.style.pointerEvents = 'auto');
+                    }, 2000);
+                }
             }
         }
         
@@ -633,6 +870,11 @@
             gameInProgress = false;
             memorySequence = [];
             playerSequence = [];
+            chances = 3;
+            
+            // Reset body class and zoom effect
+            document.body.classList.remove('intruder-detected');
+            document.querySelector('.terminal').classList.remove('zoom-effect');
             
             // Reset all phases
             document.querySelectorAll('.phase').forEach(phase => {
@@ -650,46 +892,89 @@
             document.getElementById('memoryControls').style.display = 'none';
             document.getElementById('scanProgress').style.width = '0%';
             document.getElementById('symbolDisplay').innerHTML = '';
+            document.getElementById('countdownTimer').style.display = 'none';
+            
+            // Re-enable all buttons
+            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = false);
+            document.querySelectorAll('.command-option').forEach(opt => opt.style.pointerEvents = 'auto');
+            
+            // Update chances display
+            updateChancesDisplay();
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
         }
         
         // Sound effects (using Web Audio API)
         function playSuccessSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
         }
         
         function playErrorSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.4);
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.4);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function playAlarmSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(500, audioContext.currentTime + 0.5);
+                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 1.0);
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2.0);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 2.0);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
         }
         
         // Initialize the game
         document.addEventListener('DOMContentLoaded', () => {
             createMatrixEffect();
+            updateChancesDisplay();
         });
         
         // Handle window resize for matrix effect
@@ -701,3 +986,4 @@
     </script>
 </body>
 </html>
+            

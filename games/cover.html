@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 2050 - Time Travel Adventure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: #0a0a0f;
+            color: #fff;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        /* Animated Background */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 25%, #0f0f23 70%, #000 100%);
+            z-index: -2;
+        }
+        
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(2px 2px at 160px 30px, #fff, transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: twinkle 8s infinite linear;
+        }
+        
+        @keyframes twinkle {
+            from { transform: translateX(0); }
+            to { transform: translateX(-200px); }
+        }
+        
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: #00ffff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 6s infinite linear;
+        }
+        
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Main Content */
+        .homepage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            z-index: 1;
+            transition: opacity 0.8s ease;
+        }
+        
+        .title {
+            font-size: 6rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ffff);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes glow {
+            from { filter: brightness(1) drop-shadow(0 0 10px cyan); }
+            to { filter: brightness(1.2) drop-shadow(0 0 20px cyan); }
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            color: #b0b0b0;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 2s ease 1s forwards;
+        }
+        
+        .click-prompt {
+            font-size: 1.2rem;
+            color: #00ffff;
+            animation: pulse 2s infinite, fadeInUp 2s ease 1.5s forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0a0a0f, #1a1a2e);
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-text {
+            font-size: 2rem;
+            color: #00ffff;
+            margin-bottom: 2rem;
+            animation: loadingPulse 1.5s infinite;
+        }
+        
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .progress-bar {
+            width: 400px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px #00ffff;
+        }
+        
+        .percentage {
+            color: #fff;
+            font-size: 1.2rem;
+        }
+        
+        /* Portal Animation */
+        .portal-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 20;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .portal {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            position: relative;
+            animation: portalGrow 4s ease-out forwards;
+            overflow: hidden;
+        }
+        
+        .portal::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background-image: url('../images/game-images/circle-line.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: hypnoticSpin 2s linear infinite;
+        }
+        
+        .portal::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20%;
+            height: 20%;
+            background: #000;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        
+        @keyframes portalGrow {
+            0% {
+                width: 50px;
+                height: 50px;
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                width: 100vmax;
+                height: 100vmax;
+                opacity: 1;
+            }
+        }
+        
+        @keyframes hypnoticSpin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .portal-text {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            color: #fff;
+            opacity: 0;
+            animation: fadeIn 2s ease 1s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .click-prompt {
+                font-size: 1rem;
+            }
+            
+            .progress-bar {
+                width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-container">
+        <div class="stars"></div>
+    </div>
+    
+    <div class="homepage" id="homepage">
+        <h1 class="title">PROJECT 2050</h1>
+        <p class="subtitle">Save the Future</p>
+        <p class="click-prompt">Click anywhere to begin your journey</p>
+    </div>
+    
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">Initializing Time Portal...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="percentage" id="percentage">0%</div>
+    </div>
+    
+    <div class="portal-screen" id="portalScreen">
+        <div class="portal-text">Welcome to 2050</div>
+        <div class="portal"></div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
+            particle.style.animationDuration = (Math.random() * 6 + 4) + 's';
+            particle.style.opacity = Math.random() * 0.8 + 0.2;
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 10000);
+        }
+        
+        // Generate particles continuously
+        setInterval(createParticle, 300);
+        
+        // Game state
+        let gameStarted = false;
+        
+        // Click handler
+        document.addEventListener('click', function(e) {
+            if (gameStarted) return;
+            
+            gameStarted = true;
+            startGame();
+        });
+        
+        function startGame() {
+            const homepage = document.getElementById('homepage');
+            const loadingScreen = document.getElementById('loadingScreen');
+            const portalScreen = document.getElementById('portalScreen');
+            
+            // Hide homepage
+            homepage.style.opacity = '0';
+            
+            setTimeout(() => {
+                homepage.style.display = 'none';
+                loadingScreen.style.display = 'flex';
+                startLoading();
+            }, 800);
+        }
+        
+        function startLoading() {
+            const progressFill = document.getElementById('progressFill');
+            const percentage = document.getElementById('percentage');
+            let progress = 0;
+            
+            const loadingInterval = setInterval(() => {
+                progress += Math.random() * 15 + 5;
+                if (progress > 100) progress = 100;
+                
+                progressFill.style.width = progress + '%';
+                percentage.textContent = Math.floor(progress) + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(loadingInterval);
+                    setTimeout(showPortal, 1000);
+                }
+            }, 200);
+        }
+        
+        function showPortal() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const portalScreen = document.getElementById('portalScreen');
+            
+            loadingScreen.style.display = 'none';
+            portalScreen.style.display = 'flex';
+            
+            // After portal animation, you could redirect to the actual game
+            setTimeout(() => {
+                // Example: window.location.href = 'game.html';
+                console.log('Portal sequence complete - ready to load game!');
+            }, 4000);
+        }
+        
+        // Add some dynamic lighting effects
+        document.addEventListener('mousemove', function(e) {
+            if (gameStarted) return;
+            
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            document.querySelector('.bg-container').style.background = 
+                `radial-gradient(ellipse at ${x * 100}% ${y * 100}%, #2a2a4e 0%, #16213e 25%, #0f0f23 70%, #000 100%)`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔊 SOUND DETECTOR: FIND THE SAFE ROUTE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #404040 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            overflow: auto;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        body.failure {
+            background: linear-gradient(135deg, #4a0000 0%, #8a0000 50%, #ca0000 100%);
+            animation: alarmFlash 0.5s infinite;
+        }
+        
+        @keyframes alarmFlash {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3) contrast(1.2); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { text-shadow: 0 0 10px #00ff00; }
+            to { text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
+        }
+        
+        body.failure .game-header {
+            animation: redPulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes redPulse {
+            from { text-shadow: 0 0 10px #ff0000; }
+            to { text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000; }
+        }
+        
+        .title {
+            font-size: 2.5em;
+            font-weight: 900;
+            color: #00ff00;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        
+        body.failure .title {
+            color: #ff0000;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #ffff00;
+            margin-bottom: 20px;
+        }
+        
+        body.failure .subtitle {
+            color: #ff4444;
+        }
+        
+        .instructions {
+            text-align: center;
+            color: #aaa;
+            margin: 20px 0;
+            max-width: 600px;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+        
+        .game-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .door-container {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .door-container:hover {
+            transform: translateY(-5px);
+            filter: brightness(1.2);
+        }
+        
+        .door-container.listening {
+            animation: listening 0.5s infinite;
+        }
+        
+        @keyframes listening {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .door-image {
+            width: 180px;
+            height: 240px;
+            border: 3px solid #00ff00;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        body.failure .door-image {
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+        
+        .door-number {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 0, 0.9);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        body.failure .door-number {
+            background: rgba(255, 0, 0, 0.9);
+            color: #fff;
+        }
+        
+        .sound-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 50%;
+            border: 2px solid #00ff00;
+            transition: all 0.3s ease;
+        }
+        
+        .sound-icon:hover {
+            background: rgba(0, 255, 0, 0.2);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .enemy-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 7px;
+            display: none;
+            z-index: 10;
+        }
+        
+        .status-message {
+            text-align: center;
+            font-size: 1.3em;
+            margin: 30px 0;
+            min-height: 40px;
+        }
+        
+        .success { 
+            color: #00ff00; 
+            animation: successPulse 1s ease-in-out;
+        }
+        
+        .error { 
+            color: #ff0000; 
+            animation: errorShake 0.5s ease-in-out;
+        }
+        
+        .warning { 
+            color: #ffaa00; 
+        }
+        
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+            color: #888;
+            font-size: 1em;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, #ff4444, #ff6666);
+            border: none;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+            display: none;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 68, 68, 0.5);
+        }
+        
+        .game-complete {
+            text-align: center;
+            color: #00ff00;
+            font-size: 2em;
+            margin: 30px 0;
+            animation: gameCompleteGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes gameCompleteGlow {
+            from { text-shadow: 0 0 10px #00ff00; }
+            to { text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
+        }
+        
+        .phase-indicator {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1em;
+            color: #ffff00;
+        }
+        
+        body.failure .phase-indicator {
+            color: #ff8888;
+        }
+        
+        @media (max-width: 768px) {
+            .title { font-size: 2em; }
+            .game-area { gap: 20px; }
+            .door-image { width: 150px; height: 200px; }
+            .sound-icon { font-size: 2.5em; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-header">
+            <div class="title">🔊 SOUND DETECTOR: FIND THE SAFE ROUTE</div>
+            <div class="subtitle">Use Lucy's gadget to identify the correct door</div>
+        </div>
+        
+        <div class="instructions" id="instructions">
+            Click on each door to listen for sounds. Find the door with only buzzing sound - that's the safe route!
+        </div>
+        
+        <div class="phase-indicator" id="phaseIndicator">
+            Phase 1: Listen to all doors to learn the sounds
+        </div>
+        
+        <div class="game-area">
+            <div class="door-container" data-door="1" onclick="listenToDoor(1)">
+                <img src="../images/game-images/sound-game/door.png" alt="Door 1" class="door-image">
+                <div class="door-number">Door 1</div>
+                <div class="sound-icon">🔊</div>
+                <img src="../images/game-images/sound-game/guard.png" alt="Enemy" class="enemy-image" id="enemy1">
+            </div>
+            
+            <div class="door-container" data-door="2" onclick="listenToDoor(2)">
+                <img src="../images/game-images/sound-game/door.png" alt="Door 2" class="door-image">
+                <div class="door-number">Door 2</div>
+                <div class="sound-icon">🔊</div>
+                <img src="../images/game-images/sound-game/robot.png" alt="Enemy" class="enemy-image" id="enemy2">
+            </div>
+            
+            <div class="door-container" data-door="3" onclick="listenToDoor(3)">
+                <img src="../images/game-images/sound-game/door.png" alt="Door 3" class="door-image">
+                <div class="door-number">Door 3</div>
+                <div class="sound-icon">🔊</div>
+                <img src="../images/game-images/sound-game/guard.png" alt="Enemy" class="enemy-image" id="enemy3">
+            </div>
+        </div>
+        
+        <div class="status-message" id="statusMessage">Listen to each door to identify the sounds, then choose the safe door!</div>
+        
+        <div class="controls">
+            🔊 Listen carefully • Buzz = Safe • Footsteps = Danger
+        </div>
+        
+        <button class="restart-btn" id="restartBtn" onclick="restartGame()">🔄 Restart Game</button>
+    </div>
+
+    <script>
+        let gameState = 'listening'; // 'listening', 'choosing', 'success', 'failure'
+        let doorsListened = new Set();
+        let correctDoor = 0;
+        let soundsEnabled = true;
+        
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAudio();
+            initializeGame();
+        });
+        
+        function initializeGame() {
+            // Randomly assign which door is correct (has buzz sound)
+            correctDoor = Math.floor(Math.random() * 3) + 1;
+            
+            // Reset game state
+            gameState = 'listening';
+            doorsListened.clear();
+            document.body.classList.remove('failure');
+            
+            // Hide all enemy images
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`enemy${i}`).style.display = 'none';
+            }
+            
+            // Reset UI
+            document.getElementById('statusMessage').innerHTML = 'Listen to each door to identify the sounds, then choose the safe door!';
+            document.getElementById('phaseIndicator').textContent = 'Phase 1: Listen to all doors to learn the sounds';
+            document.getElementById('restartBtn').style.display = 'none';
+            
+            console.log(`Debug: Correct door is ${correctDoor}`);
+        }
+        
+        function listenToDoor(doorNumber) {
+            if (gameState === 'success' || gameState === 'failure') return;
+            
+            const doorContainer = document.querySelector(`[data-door="${doorNumber}"]`);
+            doorContainer.classList.add('listening');
+            
+            // Play appropriate sound
+            if (doorNumber === correctDoor) {
+                playBuzzSound();
+            } else {
+                playFootstepSound();
+            }
+            
+            // Mark door as listened
+            doorsListened.add(doorNumber);
+            
+            // Remove listening animation after sound
+            setTimeout(() => {
+                doorContainer.classList.remove('listening');
+            }, 1000);
+            
+            // Check if all doors have been listened to
+            if (doorsListened.size === 3 && gameState === 'listening') {
+                setTimeout(() => {
+                    gameState = 'choosing';
+                    document.getElementById('phaseIndicator').textContent = 'Phase 2: Choose the door with the buzzing sound';
+                    document.getElementById('statusMessage').innerHTML = '<div class="warning">Now choose the door with the buzzing sound to find the safe route!</div>';
+                    
+                    // Change click behavior for choosing
+                    updateDoorClickBehavior();
+                }, 1500);
+            }
+        }
+        
+        function updateDoorClickBehavior() {
+            // Remove old click handlers and add new ones for choosing
+            document.querySelectorAll('.door-container').forEach((container, index) => {
+                const doorNumber = index + 1;
+                container.setAttribute('onclick', `chooseDoor(${doorNumber})`);
+                
+                // Update visual feedback
+                const soundIcon = container.querySelector('.sound-icon');
+                soundIcon.textContent = '🚪';
+                soundIcon.style.background = 'rgba(255, 255, 0, 0.8)';
+                soundIcon.style.color = '#000';
+            });
+        }
+        
+        function chooseDoor(doorNumber) {
+            if (gameState !== 'choosing') return;
+            
+            const doorContainer = document.querySelector(`[data-door="${doorNumber}"]`);
+            
+            if (doorNumber === correctDoor) {
+                // Correct choice - success
+                gameState = 'success';
+                doorContainer.style.border = '5px solid #00ff00';
+                doorContainer.style.boxShadow = '0 0 30px rgba(0, 255, 0, 0.8)';
+                
+                playSuccessSound();
+                
+                document.getElementById('statusMessage').innerHTML = '<div class="game-complete">🎉 SUCCESS! You found the safe route!</div>';
+                document.getElementById('phaseIndicator').textContent = 'Mission Complete: Safe passage secured!';
+                
+                // Notify parent comic that game is completed
+                setTimeout(() => {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'gameComplete',
+                            game: 'sound',
+                            completed: true
+                        }, '*');
+                    }
+                }, 2000);
+                
+            } else {
+                // Wrong choice - failure
+                gameState = 'failure';
+                document.body.classList.add('failure');
+                
+                // Show enemy image on the chosen door
+                const enemyImage = document.getElementById(`enemy${doorNumber}`);
+                enemyImage.style.display = 'block';
+                
+                // Play siren sound
+                playSirenSound();
+                
+                doorContainer.style.border = '5px solid #ff0000';
+                doorContainer.style.boxShadow = '0 0 30px rgba(255, 0, 0, 0.8)';
+                
+                document.getElementById('statusMessage').innerHTML = '<div class="error">🚨 ENEMY DETECTED! Wrong door chosen!</div>';
+                document.getElementById('phaseIndicator').textContent = 'Mission Failed: Security compromised!';
+                document.getElementById('restartBtn').style.display = 'inline-block';
+            }
+        }
+        
+        function restartGame() {
+            initializeAudio();
+            initializeGame();
+            
+            // Reset door appearances
+            document.querySelectorAll('.door-container').forEach((container, index) => {
+                const doorNumber = index + 1;
+                container.style.border = '3px solid #00ff00';
+                container.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.3)';
+                container.setAttribute('onclick', `listenToDoor(${doorNumber})`);
+                
+                // Reset sound icons
+                const soundIcon = container.querySelector('.sound-icon');
+                soundIcon.textContent = '🔊';
+                soundIcon.style.background = 'rgba(0, 0, 0, 0.8)';
+                soundIcon.style.color = '#00ff00';
+            });
+        }
+        
+        // Audio elements for sound effects
+        let noiseAudio, footstepAudio;
+        
+        // Initialize audio elements
+        function initializeAudio() {
+            noiseAudio = new Audio('../images/game-images/sound-game/noise.mp3');
+            footstepAudio = new Audio('../images/game-images/sound-game/footstep.mp3');
+            
+            // Set volume levels
+            noiseAudio.volume = 0.2;
+            footstepAudio.volume = 0.6;
+            
+            // Preload audio files
+            noiseAudio.preload = 'auto';
+            footstepAudio.preload = 'auto';
+        }
+        
+        // Sound playback functions using MP3 files
+        function playBuzzSound() {
+            if (!soundsEnabled || !noiseAudio) return;
+            
+            try {
+                noiseAudio.currentTime = 0; // Reset to beginning
+                noiseAudio.play().catch(e => console.log('Audio play failed:', e));
+                setTimeout(() => {
+                    noiseAudio.pause();
+                }, 3000); // Stop after 3 seconds
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function playFootstepSound() {
+            if (!soundsEnabled || !footstepAudio) return;
+            
+            try {
+                footstepAudio.currentTime = 0; // Reset to beginning
+                footstepAudio.play().catch(e => console.log('Audio play failed:', e));
+                setTimeout(() => {
+                    footstepAudio.pause();
+                }, 3000); // Stop after 3 seconds
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function playSirenSound() {
+            if (!soundsEnabled) return;
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Create siren effect
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.5);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 1);
+                oscillator.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 1.5);
+                
+                gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+                
+                oscillator.type = 'sawtooth';
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 2);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function playSuccessSound() {
+            if (!soundsEnabled) return;
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Play ascending melody
+                const notes = [523, 659, 784, 1047]; // C, E, G, C
+                notes.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + index * 0.2);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.2 + 0.3);
+                    
+                    oscillator.type = 'sine';
+                    oscillator.start(audioContext.currentTime + index * 0.2);
+                    oscillator.stop(audioContext.currentTime + index * 0.2 + 0.3);
+                });
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Responsive adjustments if needed
+        });
+    </script>
+</body>
+</html>
