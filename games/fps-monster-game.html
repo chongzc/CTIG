@@ -671,15 +671,19 @@
                 this.gameActive = false;
                 clearTimeout(this.monsterTimer);
                 clearInterval(this.countdownTimer);
-                
                 // Play end game sound
                 if (this.score >= 25) {
                     this.playSound(600, 0.5); // Victory sound
                 } else {
                     this.playSound(150, 1.0); // Defeat sound
                 }
-                
                 this.showGameOver();
+                // Notify parent comic that game is completed (same as hacking.html)
+                setTimeout(() => {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({ type: 'gameComplete', game: 'fpsmonster' }, '*');
+                    }
+                }, 3000);
             }
 
             showGameOver() {

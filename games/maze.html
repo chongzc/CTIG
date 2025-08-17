@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zennita's Maze Adventure</title>
+    <title>Zennita's Monster Escape</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background: linear-gradient(135deg, #2c1810, #8B0000);
             color: white;
             min-height: 100vh;
             display: flex;
@@ -24,10 +24,10 @@
         }
 
         .game-container {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -41,8 +41,8 @@
         .story h1 {
             font-size: 2.5em;
             margin-bottom: 15px;
-            color: #ffd700;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .story p {
@@ -52,6 +52,30 @@
             opacity: 0.9;
         }
 
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .info-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
         .maze {
             display: grid;
             grid-template-columns: repeat(15, 30px);
@@ -59,9 +83,9 @@
             gap: 1px;
             margin: 20px auto;
             padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             border-radius: 10px;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
         }
 
         .cell {
@@ -73,43 +97,73 @@
             font-size: 16px;
             border-radius: 3px;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .wall {
             background: linear-gradient(45deg, #2c3e50, #34495e);
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
         }
 
         .path {
-            background: linear-gradient(45deg, #ecf0f1, #bdc3c7);
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            color: #333;
         }
 
         .player {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
             color: white;
             font-weight: bold;
             border: 2px solid #fff;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);
+            animation: playerPulse 1.5s infinite;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.8);
+            z-index: 10;
         }
 
-        .sound-source {
+        .monster {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            font-weight: bold;
+            border: 2px solid #000;
+            animation: monsterGlow 1s infinite alternate;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 1);
+            z-index: 9;
+        }
+
+        .exit {
             background: linear-gradient(45deg, #f1c40f, #f39c12);
             color: #2c3e50;
             font-weight: bold;
             border: 2px solid #fff;
-            animation: glow 1.5s infinite alternate;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+            animation: exitGlow 2s infinite;
+            box-shadow: 0 0 25px rgba(241, 196, 15, 1);
         }
 
-        @keyframes pulse {
+        @keyframes playerPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
 
-        @keyframes glow {
-            0% { box-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
-            100% { box-shadow: 0 0 30px rgba(241, 196, 15, 1), 0 0 40px rgba(241, 196, 15, 0.6); }
+        @keyframes monsterGlow {
+            0% { 
+                box-shadow: 0 0 20px rgba(231, 76, 60, 1);
+                transform: scale(1);
+            }
+            100% { 
+                box-shadow: 0 0 30px rgba(231, 76, 60, 1), 0 0 40px rgba(231, 76, 60, 0.6);
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes exitGlow {
+            0%, 100% { 
+                box-shadow: 0 0 25px rgba(241, 196, 15, 1);
+                transform: rotate(0deg);
+            }
+            50% { 
+                box-shadow: 0 0 35px rgba(241, 196, 15, 1), 0 0 45px rgba(241, 196, 15, 0.8);
+                transform: rotate(5deg);
+            }
         }
 
         .controls {
@@ -119,7 +173,7 @@
 
         .controls h3 {
             margin-bottom: 15px;
-            color: #ffd700;
+            color: #ff6b6b;
         }
 
         .control-buttons {
@@ -140,12 +194,12 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
         .control-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
             background: linear-gradient(45deg, #2980b9, #3498db);
         }
 
@@ -159,22 +213,29 @@
             margin-top: 10px;
         }
 
-        .victory-message {
+        .game-over-message, .victory-message {
             display: none;
             text-align: center;
             margin-top: 20px;
             padding: 20px;
-            background: linear-gradient(45deg, #27ae60, #2ecc71);
             border-radius: 10px;
-            animation: celebration 1s ease-in-out;
+            animation: messageSlide 0.5s ease-in-out;
         }
 
-        @keyframes celebration {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .game-over-message {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
         }
 
-        .victory-message h2 {
+        .victory-message {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        @keyframes messageSlide {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .game-over-message h2, .victory-message h2 {
             font-size: 1.8em;
             margin-bottom: 10px;
         }
@@ -187,48 +248,75 @@
             font-size: 16px;
             border-radius: 8px;
             cursor: pointer;
-            margin-top: 15px;
+            margin: 10px;
             transition: all 0.3s ease;
         }
 
         .reset-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
         }
 
-        .sound-indicator {
+        .warning {
             text-align: center;
             margin-top: 15px;
             font-size: 1.1em;
-            color: #ffd700;
+            color: #ff6b6b;
+            animation: warningBlink 2s infinite;
         }
 
-        .sound-wave {
-            display: inline-block;
-            animation: soundWave 1s infinite;
-        }
-
-        @keyframes soundWave {
-            0%, 100% { opacity: 0.3; }
+        @keyframes warningBlink {
+            0%, 100% { opacity: 0.7; }
             50% { opacity: 1; }
+        }
+
+        .monster-distance {
+            color: #ff6b6b;
+        }
+
+        .safe-distance {
+            color: #2ecc71;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="story">
-            <h1>🏠 Zennita's Maze Adventure</h1>
-            <p>Zennita enters a mysterious building and hears a strange sound echoing from somewhere inside.</p>
-            <p><strong>Help Zennita navigate through the maze to find the source of the sound!</strong></p>
+            <h1>👹 Zennita's Monster Escape</h1>
+            <p>Zennita is trapped in a haunted building with a terrifying monster!</p>
+            <p><strong>Help her escape before the monster catches her!</strong></p>
+        </div>
+
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Moves</div>
+                <div class="info-value" id="moveCounter">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Monster Distance</div>
+                <div class="info-value" id="monsterDistance">Safe</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Monster Speed</div>
+                <div class="info-value" id="monsterSpeedDisplay">Normal</div>
+            </div>
         </div>
 
         <div id="maze" class="maze"></div>
 
-        <div class="sound-indicator">
-            <span class="sound-wave">♪</span> Listen carefully... the sound is calling... <span class="sound-wave">♫</span>
+        <div class="warning">
+            ⚠️ The monster is hunting you! Move carefully and find the exit! 🚪
         </div>
 
         <div class="controls">
+            <h3>Speed Settings:</h3>
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(1)">Fast</button>
+                <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(2)">Normal</button>
+                <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(3)">Slow</button>
+                <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(4)">Very Slow</button>
+            </div>
+            
             <h3>Move Zennita:</h3>
             <div class="control-buttons">
                 <div></div>
@@ -246,16 +334,24 @@
             </div>
         </div>
 
+        <div id="gameOverMessage" class="game-over-message">
+            <h2>💀 Game Over!</h2>
+            <p>The monster caught Zennita!</p>
+            <p>Try again and be more careful!</p>
+            <button class="reset-btn" onclick="resetGame()">Try Again</button>
+        </div>
+
         <div id="victoryMessage" class="victory-message">
-            <h2>🎉 Congratulations!</h2>
-            <p>Zennita found the source of the mysterious sound!</p>
-            <p>The adventure is complete!</p>
+            <h2>🎉 Escaped!</h2>
+            <p>Zennita successfully escaped from the monster!</p>
+            <p>Well done! You completed the escape in <span id="finalMoves">0</span> moves!</p>
             <button class="reset-btn" onclick="goToNextPage()">Next Page</button>
+            <button class="reset-btn" onclick="resetGame()">Play Again</button>
         </div>
     </div>
 
     <script>
-        // Maze layout: 0 = wall, 1 = path, 2 = player start, 3 = sound source
+        // Maze layout: 0 = wall, 1 = path, 2 = player start, 3 = exit, 4 = monster start
         const mazeLayout = [
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
             [0,2,1,0,1,1,1,0,1,1,1,0,1,1,0],
@@ -269,13 +365,17 @@
             [0,0,0,1,0,0,0,0,1,0,1,0,0,0,0],
             [0,1,1,1,0,1,1,1,1,1,1,0,1,1,0],
             [0,1,0,0,0,1,0,0,0,0,1,0,1,0,0],
-            [0,1,1,1,1,1,0,1,1,1,1,1,1,1,0],
+            [0,4,1,1,1,1,0,1,1,1,1,1,1,1,0],
             [0,0,0,0,0,0,0,1,0,0,0,0,0,3,0],
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ];
 
         let playerPos = { x: 1, y: 1 };
+        let monsterPos = { x: 1, y: 12 };
         let gameWon = false;
+        let gameOver = false;
+        let moveCount = 0;
+        let monsterMoveDelay = 0;
 
         function createMaze() {
             const maze = document.getElementById('maze');
@@ -296,34 +396,78 @@
                         cell.textContent = 'Z';
                         playerPos = { x: x, y: y };
                     } else if (mazeLayout[y][x] === 3) {
-                        cell.classList.add('path', 'sound-source');
-                        cell.textContent = '♪';
+                        cell.classList.add('path', 'exit');
+                        cell.textContent = '🚪';
+                    } else if (mazeLayout[y][x] === 4) {
+                        cell.classList.add('path', 'monster');
+                        cell.textContent = '👹';
+                        monsterPos = { x: x, y: y };
                     }
 
                     maze.appendChild(cell);
                 }
             }
+            updateGameInfo();
+        }
+
+        function calculateDistance(pos1, pos2) {
+            return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+        }
+
+        function setMonsterSpeed(speed) {
+            monsterSpeed = speed;
+            monsterMoveDelay = 0; // Reset delay when speed changes
+            
+            const speedDisplay = document.getElementById('monsterSpeedDisplay');
+            switch(speed) {
+                case 1:
+                    speedDisplay.textContent = 'Fast';
+                    speedDisplay.style.color = '#e74c3c';
+                    break;
+                case 2:
+                    speedDisplay.textContent = 'Normal';
+                    speedDisplay.style.color = '#ffd700';
+                    break;
+                case 3:
+                    speedDisplay.textContent = 'Slow';
+                    speedDisplay.style.color = '#f39c12';
+                    break;
+                case 4:
+                    speedDisplay.textContent = 'Very Slow';
+                    speedDisplay.style.color = '#2ecc71';
+                    break;
+            }
+        }
+
+        function updateGameInfo() {
+            document.getElementById('moveCounter').textContent = moveCount;
+            
+            const distance = calculateDistance(playerPos, monsterPos);
+            const distanceElement = document.getElementById('monsterDistance');
+            
+            if (distance <= 2) {
+                distanceElement.textContent = 'DANGER!';
+                distanceElement.className = 'info-value monster-distance';
+            } else if (distance <= 4) {
+                distanceElement.textContent = 'Close';
+                distanceElement.className = 'info-value';
+            } else {
+                distanceElement.textContent = 'Safe';
+                distanceElement.className = 'info-value safe-distance';
+            }
         }
 
         function movePlayer(direction) {
-            if (gameWon) return;
+            if (gameWon || gameOver) return;
 
             let newX = playerPos.x;
             let newY = playerPos.y;
 
             switch (direction) {
-                case 'up':
-                    newY--;
-                    break;
-                case 'down':
-                    newY++;
-                    break;
-                case 'left':
-                    newX--;
-                    break;
-                case 'right':
-                    newX++;
-                    break;
+                case 'up': newY--; break;
+                case 'down': newY++; break;
+                case 'left': newX--; break;
+                case 'right': newX++; break;
             }
 
             // Check bounds and walls
@@ -339,36 +483,302 @@
                 // Update position
                 playerPos.x = newX;
                 playerPos.y = newY;
+                moveCount++;
 
                 // Set new position
                 const newCell = document.getElementById(`cell-${newX}-${newY}`);
                 
-                // Check if reached sound source
+                // Check if reached exit
                 if (mazeLayout[newY][newX] === 3) {
                     newCell.classList.add('player');
-                    newCell.textContent = 'Z♪';
+                    newCell.textContent = 'Z🚪';
                     gameWon = true;
                     showVictory();
                 } else {
                     newCell.classList.add('player');
                     newCell.textContent = 'Z';
                 }
+
+                // Move monster after player with adjustable delay
+                setTimeout(moveMonster, 200);
             }
+            updateGameInfo();
+        }
+
+        let playerPath = [];
+        let monsterStrategy = 'hunt'; // 'hunt', 'intercept', 'guard'
+        let lastPlayerPos = { x: 1, y: 1 };
+        let monsterSpeed = 2; // Monster moves every X player moves (higher = slower monster)
+
+        function moveMonster() {
+            if (gameWon || gameOver) return;
+
+            // Monster speed control - moves every X player turns
+            monsterMoveDelay++;
+            if (monsterMoveDelay < monsterSpeed) return;
+            monsterMoveDelay = 0;
+
+            // Track player movement pattern
+            playerPath.push({ ...playerPos });
+            if (playerPath.length > 5) playerPath.shift();
+
+            // Clear current monster position
+            const currentMonsterCell = document.getElementById(`cell-${monsterPos.x}-${monsterPos.y}`);
+            currentMonsterCell.classList.remove('monster');
+            currentMonsterCell.textContent = '';
+
+            // Advanced AI Strategy Selection
+            const distanceToPlayer = calculateDistance(monsterPos, playerPos);
+            const distanceToExit = calculateDistance(playerPos, { x: 13, y: 13 });
+            
+            // Dynamic strategy based on game state
+            if (distanceToExit < 5 && distanceToPlayer > 4) {
+                monsterStrategy = 'intercept'; // Block exit when player is close
+            } else if (distanceToPlayer <= 3) {
+                monsterStrategy = 'hunt'; // Direct chase when close
+            } else if (Math.random() < 0.3) {
+                monsterStrategy = 'predict'; // Predict player movement
+            }
+
+            let bestMove = null;
+
+            switch (monsterStrategy) {
+                case 'hunt':
+                    bestMove = aStar(monsterPos, playerPos);
+                    break;
+                case 'intercept':
+                    bestMove = interceptPlayer();
+                    break;
+                case 'predict':
+                    bestMove = predictiveMove();
+                    break;
+                default:
+                    bestMove = aStar(monsterPos, playerPos);
+            }
+
+            if (bestMove) {
+                monsterPos.x = bestMove.x;
+                monsterPos.y = bestMove.y;
+            }
+
+            // Place monster in new position
+            const newMonsterCell = document.getElementById(`cell-${monsterPos.x}-${monsterPos.y}`);
+            
+            // Check if monster caught player
+            if (monsterPos.x === playerPos.x && monsterPos.y === playerPos.y) {
+                newMonsterCell.classList.add('monster');
+                newMonsterCell.textContent = '👹Z';
+                gameOver = true;
+                showGameOver();
+            } else {
+                newMonsterCell.classList.add('monster');
+                newMonsterCell.textContent = '👹';
+            }
+
+            lastPlayerPos = { ...playerPos };
+            updateGameInfo();
+        }
+
+        // A* Pathfinding Algorithm
+        function aStar(start, goal) {
+            const openSet = [start];
+            const cameFrom = {};
+            const gScore = {};
+            const fScore = {};
+            
+            const key = (pos) => `${pos.x},${pos.y}`;
+            
+            gScore[key(start)] = 0;
+            fScore[key(start)] = heuristic(start, goal);
+            
+            while (openSet.length > 0) {
+                // Find node with lowest fScore
+                let current = openSet[0];
+                let currentIndex = 0;
+                for (let i = 1; i < openSet.length; i++) {
+                    if (fScore[key(openSet[i])] < fScore[key(current)]) {
+                        current = openSet[i];
+                        currentIndex = i;
+                    }
+                }
+                
+                // If we reached the goal, reconstruct path
+                if (current.x === goal.x && current.y === goal.y) {
+                    const path = [];
+                    let temp = current;
+                    while (cameFrom[key(temp)]) {
+                        path.push(temp);
+                        temp = cameFrom[key(temp)];
+                    }
+                    // Return first step in optimal path
+                    return path.length > 1 ? path[path.length - 2] : path[0];
+                }
+                
+                openSet.splice(currentIndex, 1);
+                
+                // Check all neighbors
+                const neighbors = [
+                    { x: current.x + 1, y: current.y },
+                    { x: current.x - 1, y: current.y },
+                    { x: current.x, y: current.y + 1 },
+                    { x: current.x, y: current.y - 1 }
+                ];
+                
+                for (const neighbor of neighbors) {
+                    if (!canMoveTo(neighbor.x, neighbor.y)) continue;
+                    
+                    const tentativeGScore = gScore[key(current)] + 1;
+                    const neighborKey = key(neighbor);
+                    
+                    if (gScore[neighborKey] === undefined) {
+                        gScore[neighborKey] = Infinity;
+                    }
+                    
+                    if (tentativeGScore < gScore[neighborKey]) {
+                        cameFrom[neighborKey] = current;
+                        gScore[neighborKey] = tentativeGScore;
+                        fScore[neighborKey] = gScore[neighborKey] + heuristic(neighbor, goal);
+                        
+                        if (!openSet.find(pos => pos.x === neighbor.x && pos.y === neighbor.y)) {
+                            openSet.push(neighbor);
+                        }
+                    }
+                }
+            }
+            
+            // If no path found, move towards player directly
+            return moveTowardsTarget(monsterPos, goal);
+        }
+
+        function heuristic(pos1, pos2) {
+            return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+        }
+
+        // Intercept strategy - block exit or predict player movement
+        function interceptPlayer() {
+            const exitPos = { x: 13, y: 13 };
+            const playerToExit = calculateDistance(playerPos, exitPos);
+            const monsterToExit = calculateDistance(monsterPos, exitPos);
+            
+            // If player is closer to exit, try to block it
+            if (playerToExit < monsterToExit) {
+                // Find strategic blocking position near exit
+                const blockingPositions = [
+                    { x: 12, y: 13 },
+                    { x: 13, y: 12 },
+                    { x: 11, y: 13 },
+                    { x: 13, y: 11 }
+                ];
+                
+                let bestBlock = null;
+                let shortestPath = Infinity;
+                
+                for (const pos of blockingPositions) {
+                    if (canMoveTo(pos.x, pos.y)) {
+                        const distance = calculateDistance(monsterPos, pos);
+                        if (distance < shortestPath) {
+                            shortestPath = distance;
+                            bestBlock = pos;
+                        }
+                    }
+                }
+                
+                if (bestBlock) {
+                    return aStar(monsterPos, bestBlock);
+                }
+            }
+            
+            // Default to hunting
+            return aStar(monsterPos, playerPos);
+        }
+
+        // Predictive movement based on player pattern
+        function predictiveMove() {
+            if (playerPath.length < 3) {
+                return aStar(monsterPos, playerPos);
+            }
+            
+            // Analyze player movement pattern
+            const recentMoves = playerPath.slice(-3);
+            const deltaX = recentMoves[2].x - recentMoves[0].x;
+            const deltaY = recentMoves[2].y - recentMoves[0].y;
+            
+            // Predict where player might go
+            const predictedPos = {
+                x: Math.max(0, Math.min(14, playerPos.x + deltaX)),
+                y: Math.max(0, Math.min(14, playerPos.y + deltaY))
+            };
+            
+            // If predicted position is valid, move towards it
+            if (canMoveTo(predictedPos.x, predictedPos.y)) {
+                return aStar(monsterPos, predictedPos);
+            }
+            
+            // Fallback to direct chase
+            return aStar(monsterPos, playerPos);
+        }
+
+        // Fallback movement function
+        function moveTowardsTarget(from, to) {
+            const directions = [
+                { x: from.x + 1, y: from.y },
+                { x: from.x - 1, y: from.y },
+                { x: from.x, y: from.y + 1 },
+                { x: from.x, y: from.y - 1 }
+            ];
+            
+            let bestMove = null;
+            let shortestDistance = Infinity;
+            
+            for (const dir of directions) {
+                if (canMoveTo(dir.x, dir.y)) {
+                    const distance = calculateDistance(dir, to);
+                    if (distance < shortestDistance) {
+                        shortestDistance = distance;
+                        bestMove = dir;
+                    }
+                }
+            }
+            
+            return bestMove;
+        }
+
+        function canMoveTo(x, y) {
+            return x >= 0 && x < mazeLayout[0].length && 
+                   y >= 0 && y < mazeLayout.length && 
+                   mazeLayout[y][x] !== 0;
+        }
+
+        function showGameOver() {
+            document.getElementById('gameOverMessage').style.display = 'block';
+            document.getElementById('gameStatus').textContent = 'Caught!';
         }
 
         function showVictory() {
             document.getElementById('victoryMessage').style.display = 'block';
+            document.getElementById('finalMoves').textContent = moveCount;
+            document.getElementById('gameStatus').textContent = 'Escaped!';
         }
 
         function resetGame() {
             gameWon = false;
+            gameOver = false;
+            moveCount = 0;
+            monsterMoveDelay = 0;
+            playerPath = [];
+            monsterStrategy = 'hunt';
+            lastPlayerPos = { x: 1, y: 1 };
+            
+            // Reset positions
+            playerPos = { x: 1, y: 1 };
+            monsterPos = { x: 1, y: 12 };
+            
+            // Hide messages
+            document.getElementById('gameOverMessage').style.display = 'none';
             document.getElementById('victoryMessage').style.display = 'none';
             
-            // Reset maze layout
-            mazeLayout[1][1] = 2; // Reset player start
-            mazeLayout[13][13] = 3; // Reset sound source
-            
             createMaze();
+            setMonsterSpeed(monsterSpeed); // Maintain current speed setting
         }
 
         function goToNextPage() {
@@ -376,7 +786,7 @@
             if (window.parent && window.parent !== window) {
                 window.parent.postMessage({
                     type: 'gameComplete',
-                    game: 'maze'
+                    game: 'escape'
                 }, '*');
             } else {
                 // Fallback: navigate to the next page in the comic
@@ -403,11 +813,18 @@
                     event.preventDefault();
                     movePlayer('right');
                     break;
+                case 'r':
+                case 'R':
+                    if (gameOver || gameWon) {
+                        resetGame();
+                    }
+                    break;
             }
         });
 
         // Initialize the game
         createMaze();
+        setMonsterSpeed(2); // Start with Normal speed
     </script>
 </body>
 </html>
