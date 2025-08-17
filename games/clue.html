@@ -870,6 +870,16 @@
                 // Victory!
                 document.getElementById('victory').style.display = 'flex';
                 playVictorySound();
+                // Auto-advance: notify parent comic after 3s
+                setTimeout(() => {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'gameComplete',
+                            game: 'clue',
+                            completed: true
+                        }, '*');
+                    }
+                }, 3000);
             } else {
                 // Game Over!
                 document.getElementById('gameOver').style.display = 'flex';

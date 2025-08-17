@@ -395,8 +395,10 @@
             
             // After portal animation, you could redirect to the actual game
             setTimeout(() => {
-                // Example: window.location.href = 'game.html';
-                console.log('Portal sequence complete - ready to load game!');
+                // Signal parent to start comic (load page 1)
+                if (window.parent) {
+                    window.parent.postMessage({ type: 'startComic' }, '*');
+                }
             }, 4000);
         }
         

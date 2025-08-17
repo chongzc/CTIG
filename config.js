@@ -4,39 +4,63 @@
 const COMIC_CONFIG = {
     // Button positions for easy adjustment
     buttonPositions: {
-        hacking: {
-            top: 200,    // pixels from top
-            left: 60     // percentage from left
-        },
-        maze: {
-            top: 300,    // pixels from top
-            left: 40     // percentage from left
-        }
+        fpsmonster: { top: 200, left: 60 },
+        hacking: { top: 200, left: 60 },
+        sound: { top: 200, left: 60 },
+        clue: { top: 200, left: 60 },
+        electric: { top: 200, left: 60 },
+        maze: { top: 900, left: 60 },
+        goo5next: { top: 400, left: 50 }, // Button to go to screen.jpg
+        screenback: { top: 400, left: 50 } // Button to go back to goo5.jpg
     },
-    
+
     // Game settings
     games: {
+        fpsmonster: {
+            title: "FPS Monster Game",
+            file: "games/fps-monster-game.html",
+            requiredPage: 9,
+            autoAdvanceDelay: 2000
+        },
         hacking: {
             title: "Hacking Challenge",
             file: "games/hacking.html",
-            requiredPage: 1,
+            requiredPage: 11,
+            autoAdvanceDelay: 2000
+        },
+        sound: {
+            title: "Sound Game",
+            file: "games/sound.html",
+            requiredPage: 12,
+            autoAdvanceDelay: 2000
+        },
+        clue: {
+            title: "Clue Game",
+            file: "games/clue.html",
+            requiredPage: 13,
+            autoAdvanceDelay: 2000
+        },
+        electric: {
+            title: "Electric Game",
+            file: "games/electric.html",
+            requiredPage: 14,
             autoAdvanceDelay: 2000
         },
         maze: {
-            title: "Maze Challenge", 
+            title: "Maze Game",
             file: "games/maze.html",
-            requiredPage: 3,
+            requiredPage: 5,
             autoAdvanceDelay: 2000
         }
     },
-    
+
     // Navigation settings
     navigation: {
         enableKeyboard: true,
         enableAutoAdvance: true,
         pageTransitionDelay: 500
     },
-    
+
     // UI settings
     ui: {
         buttonStyle: {
