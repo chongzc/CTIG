@@ -7,7 +7,7 @@ const gameProgress = {
     sound: false,
     clue: false,
     electric: false,
-    maze: true
+    maze: false
 };
 
 // Current page tracking
@@ -203,16 +203,19 @@ function loadGameContent(gameFile, gameType) {
     if (setupFn && typeof window[setupFn] === 'function') {
         setTimeout(() => window[setupFn](), 100); // Ensure iframe is loaded
     }
+}
+
 function setupMazeGame() {
     const iframe = document.querySelector('.game-frame');
-    function mazeListener(event) {
-        if (event.data.type === 'gameComplete' && event.data.game === 'maze') {
-            completeGame('maze');
+    if (iframe && iframe.contentWindow) {
+        function mazeListener(event) {
+            if (event.data && event.data.type === 'gameComplete' && event.data.game === 'maze') {
+                completeGame('maze');
+            }
         }
+        window.addEventListener('message', mazeListener);
+        window.removeMazeListener = () => window.removeEventListener('message', mazeListener);
     }
-    window.addEventListener('message', mazeListener);
-    window.removeMazeListener = () => window.removeEventListener('message', mazeListener);
-}
 }
 
 function setupFPSMonsterGame() {

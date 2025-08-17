@@ -9,7 +9,7 @@ const COMIC_CONFIG = {
         sound: { top: 200, left: 60 },
         clue: { top: 200, left: 60 },
         electric: { top: 200, left: 60 },
-        maze: { top: 200, left: 60 },
+        maze: { top: 900, left: 60 },
         goo5next: { top: 400, left: 50 }, // Button to go to screen.jpg
         screenback: { top: 400, left: 50 } // Button to go back to goo5.jpg
     },

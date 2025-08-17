@@ -311,10 +311,7 @@
         <div class="controls">
             <h3>Speed Settings:</h3>
             <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
-                <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(1)">Fast</button>
                 <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(2)">Normal</button>
-                <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(3)">Slow</button>
-                <button class="control-btn" style="width: auto; padding: 8px 15px;" onclick="setMonsterSpeed(4)">Very Slow</button>
             </div>
             
             <h3>Move Zennita:</h3>
@@ -786,7 +783,7 @@
             if (window.parent && window.parent !== window) {
                 window.parent.postMessage({
                     type: 'gameComplete',
-                    game: 'escape'
+                    game: 'maze'
                 }, '*');
             } else {
                 // Fallback: navigate to the next page in the comic
