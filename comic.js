@@ -8,7 +8,7 @@ const gameProgress = {
 };
 
 let currentPage = 1;
-const totalPages = 19;
+const totalPages = 20;
 
 const gameConfig = COMIC_CONFIG.games;
 
@@ -133,7 +133,7 @@ function updateNavigationButtons() {
 }
 
 function previousPage() {
-    if (currentPage === 16) {
+    if (currentPage === 17) {
         showPage(15);
         return;
     }
