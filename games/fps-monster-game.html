@@ -453,7 +453,6 @@
             }
 
             createAudioContext() {
-                // Create audio context for sound effects
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
 
@@ -475,11 +474,9 @@
             }
 
             playGunshot() {
-                // Create a more realistic gunshot sound using noise and multiple frequencies
                 const noiseBuffer = this.audioContext.createBuffer(1, 4410, this.audioContext.sampleRate);
                 const noiseData = noiseBuffer.getChannelData(0);
                 
-                // Generate white noise
                 for (let i = 0; i < 4410; i++) {
                     noiseData[i] = (Math.random() * 2 - 1) * 0.5;
                 }
@@ -502,7 +499,6 @@
                 noiseSource.start(this.audioContext.currentTime);
                 noiseSource.stop(this.audioContext.currentTime + 0.1);
                 
-                // Add a low frequency thump
                 const bassOsc = this.audioContext.createOscillator();
                 const bassGain = this.audioContext.createGain();
                 
@@ -520,15 +516,12 @@
             }
 
             animateGunShot() {
-                // Add muzzle flash
                 const muzzleFlash = document.createElement('div');
                 muzzleFlash.className = 'muzzle-flash';
                 this.gun.appendChild(muzzleFlash);
                 
-                // Add recoil animation
                 this.gun.classList.add('gun-recoil');
                 
-                // Remove effects after animation
                 setTimeout(() => {
                     if (muzzleFlash.parentNode) {
                         muzzleFlash.remove();
@@ -560,7 +553,6 @@
 
                 this.gameArea.addEventListener('click', (e) => {
                     if (this.gameActive) {
-                        // Always play gunshot sound and animation when clicking in game area
                         this.playGunshot();
                         this.animateGunShot();
                         
@@ -582,24 +574,19 @@
                     return;
                 }
 
-                // Clear any existing monster
                 if (this.currentMonster) {
                     this.currentMonster.remove();
                 }
 
-                // Create new monster
                 this.currentMonster = document.createElement('div');
                 this.currentMonster.className = 'monster';
                 
-                // Calculate safe spawn areas (avoiding UI and gun)
                 const monsterSize = 80;
                 const margin = 20;
                 
-                // UI area: top-left corner (roughly 300x150 pixels with margin)
                 const uiWidth = 300;
                 const uiHeight = 150;
                 
-                // Gun area: bottom center (roughly 150x250 pixels with margin)
                 const gunWidth = 150;
                 const gunHeight = 250;
                 
@@ -612,13 +599,11 @@
                     y = Math.random() * (window.innerHeight - monsterSize);
                     attempts++;
                     
-                    // Check if position conflicts with UI area (top-left)
                     const conflictsWithUI = (
                         x < (uiWidth + margin) && 
                         y < (uiHeight + margin)
                     );
                     
-                    // Check if position conflicts with gun area (bottom-center)
                     const gunLeft = (window.innerWidth - gunWidth) / 2;
                     const gunTop = window.innerHeight - gunHeight - margin;
                     const conflictsWithGun = (
@@ -627,14 +612,12 @@
                         y + monsterSize > gunTop
                     );
                     
-                    // Position is valid if it doesn't conflict with either area
                     if (!conflictsWithUI && !conflictsWithGun) {
                         break;
                     }
                     
                 } while (attempts < maxAttempts);
                 
-                // Fallback: if we can't find a good position, use center-right area
                 if (attempts >= maxAttempts) {
                     x = window.innerWidth * 0.6 + Math.random() * (window.innerWidth * 0.3 - monsterSize);
                     y = window.innerHeight * 0.3 + Math.random() * (window.innerHeight * 0.4 - monsterSize);
@@ -645,11 +628,9 @@
                 
                 this.gameArea.appendChild(this.currentMonster);
 
-                // Reset timer
                 this.timeLeft = 2.0;
                 this.startCountdown();
 
-                // Auto-remove monster after 2 seconds
                 this.monsterTimer = setTimeout(() => {
                     this.missMonster();
                 }, 2000);
@@ -670,13 +651,11 @@
                 if (!this.gameActive) return;
                 
                 this.score++;
-                this.playSound(800, 0.1); // Hit sound
+                this.playSound(800, 0.1);
                 
-                // Clear timers
                 clearTimeout(this.monsterTimer);
                 clearInterval(this.countdownTimer);
                 
-                // Remove monster
                 if (this.currentMonster) {
                     this.currentMonster.remove();
                     this.currentMonster = null;
@@ -685,7 +664,6 @@
                 this.monstersLeft--;
                 this.updateUI();
                 
-                // Spawn next monster after short delay
                 setTimeout(() => {
                     this.spawnNextMonster();
                 }, 200);
@@ -694,12 +672,10 @@
             missMonster() {
                 if (!this.gameActive) return;
                 
-                this.playSound(200, 0.3); // Miss sound
+                this.playSound(200, 0.3);
                 
-                // Clear timers
                 clearInterval(this.countdownTimer);
                 
-                // Remove monster
                 if (this.currentMonster) {
                     this.currentMonster.remove();
                     this.currentMonster = null;
@@ -708,7 +684,6 @@
                 this.monstersLeft--;
                 this.updateUI();
                 
-                // Spawn next monster after short delay
                 setTimeout(() => {
                     this.spawnNextMonster();
                 }, 200);
@@ -724,11 +699,10 @@
                 clearTimeout(this.monsterTimer);
                 clearInterval(this.countdownTimer);
                 
-                // Play end game sound
                 if (this.score >= 25) {
-                    this.playSound(600, 0.5); // Victory sound
+                    this.playSound(600, 0.5);
                 } else {
-                    this.playSound(150, 1.0); // Defeat sound
+                    this.playSound(150, 1.0);
                 }
                 
                 this.showGameOver();
@@ -749,8 +723,8 @@
                         <p style="color: #00ff00; font-weight: bold; margin-top: 20px;">✅ You've proven your combat skills!</p>
                     `;
                     
-                    // Show continue button
                     continueBtn.style.display = 'inline-block';
+                    window.parent.postMessage({ type: 'gameComplete', game: 'fpsmonster' }, '*');
                 } else {
                     resultTitle.textContent = '💀 TRAINING FAILED 💀';
                     resultTitle.className = 'lose';
@@ -759,7 +733,6 @@
                         <p style="color: #ff4444; font-weight: bold; margin-top: 20px;">❌ You must score at least 25 hits to pass</p>
                     `;
                     
-                    // Hide continue button
                     continueBtn.style.display = 'none';
                 }
                 
@@ -768,16 +741,9 @@
             }
 
             continueStory() {
-                // Change background to chan3.jpg
-                this.gameContainer.style.backgroundImage = "url('chan3.jpg')";
-                
-                // Hide game over screen
-                this.gameOverScreen.style.display = 'none';
-                
-                // Show simple completion message
-                setTimeout(() => {
-                    alert('Training Complete! Moving to next phase...');
-                }, 500);
+                if (this.score >= 25) {
+                    window.parent.postMessage({ type: 'navigate', action: 'nextPage' }, '*');
+                }
             }
 
             resetGame() {
@@ -786,32 +752,25 @@
                 this.timeLeft = 2.0;
                 this.gameActive = false;
                 
-                // Reset background to chan2.jpg
                 this.gameContainer.style.backgroundImage = "url('chan2.jpg')";
                 
-                // Clear any existing monster
                 if (this.currentMonster) {
                     this.currentMonster.remove();
                     this.currentMonster = null;
                 }
                 
-                // Clear timers
                 clearTimeout(this.monsterTimer);
                 clearInterval(this.countdownTimer);
                 
-                // Hide game over screen
                 this.gameOverScreen.style.display = 'none';
                 
-                // Update UI
                 this.updateUI();
                 this.timerElement.textContent = 'Time: 2.0s';
                 
-                // Start new game
                 this.startGame();
             }
         }
 
-        // Initialize game when page loads
         window.addEventListener('load', () => {
             new MonsterShooterGame();
         });
