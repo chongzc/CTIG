@@ -4,7 +4,7 @@
 const COMIC_CONFIG = {
     // Button positions for easy adjustment
     buttonPositions: {
-        fpsmonster: { top: 200, left: 60 },
+        fpsmonster: { top: 900, left: 80 },
         hacking: { top: 200, left: 60 },
         sound: { top: 200, left: 60 },
         clue: { top: 200, left: 60 },
