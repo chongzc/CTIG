@@ -31,7 +31,9 @@ body, html {
 
 .comic {
   width: 80%;
-  max-width: 800px;
+  min-height: 800px;
+  max-height: 800px;
+  max-width: 1800px;
   border: 4px solid #fff;
   border-radius: 10px;
   display: block;
@@ -41,8 +43,8 @@ body, html {
 .overlay-button {
   position: absolute;
   /* Default position - can be overridden with inline styles */
-  top: 200px;
-  left: 50%;
+  /* top: 200px;
+  left: 50%; */
   transform: translate(-50%, -50%);
   padding: 14px 28px;
   font-size: 18px;
